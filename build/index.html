@@ -7,157 +7,405 @@
   <title>Inscription Tester Build</title>
 
   <style>
+    :root {
+      --bg: #050505;
+      --panel: rgba(255, 255, 255, 0.08);
+      --panel2: rgba(0, 0, 0, 0.32);
+      --line: rgba(255, 255, 255, 0.16);
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.72);
+      --soft: rgba(255, 255, 255, 0.48);
+      --orange: #ff8a00;
+      --orangeSoft: rgba(255, 138, 0, 0.18);
+      --orangeLine: rgba(255, 138, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     html,
     body {
       margin: 0;
       width: 100%;
       min-height: 100%;
       background:
-        radial-gradient(circle at top left, rgba(255, 138, 0, 0.25), transparent 34rem),
-        radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.12), transparent 28rem),
-        #050505;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
+        radial-gradient(circle at 10% 10%, rgba(255, 138, 0, 0.34), transparent 32rem),
+        radial-gradient(circle at 90% 80%, rgba(90, 120, 255, 0.18), transparent 30rem),
+        linear-gradient(135deg, #050505 0%, #111111 50%, #050505 100%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     body {
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      box-sizing: border-box;
+      padding: 22px;
     }
 
     main {
-      width: min(960px, 100%);
-      padding: 28px;
-      border-radius: 28px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.16);
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      min-height: calc(100vh - 44px);
+      display: grid;
+      align-content: center;
+      gap: 16px;
+    }
+
+    .hero,
+    .card,
+    .banner {
+      border: 1px solid var(--line);
+      background: var(--panel);
       box-shadow: 0 24px 90px rgba(0, 0, 0, 0.45);
-      box-sizing: border-box;
+      backdrop-filter: blur(12px);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 34px;
+      padding: clamp(24px, 5vw, 56px);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 72px),
+        linear-gradient(115deg, transparent 0%, rgba(255, 138, 0, 0.13) 36%, transparent 62%);
+      transform: rotate(-7deg);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: clamp(24px, 5vw, 52px);
+      align-items: center;
     }
 
     .badge {
       display: inline-flex;
-      padding: 8px 12px;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
       border-radius: 999px;
-      background: rgba(255, 138, 0, 0.16);
-      color: #ffd6a8;
+      background: var(--orangeSoft);
+      color: #ffd8a8;
+      border: 1px solid var(--orangeLine);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
     }
 
     h1 {
-      margin: 18px 0 12px;
-      font-size: clamp(34px, 8vw, 72px);
-      line-height: 0.96;
-      letter-spacing: -0.06em;
+      max-width: 780px;
+      margin: 22px 0 14px;
+      font-size: clamp(42px, 8vw, 86px);
+      line-height: 0.92;
+      letter-spacing: -0.07em;
     }
 
-    p {
+    .lead {
       max-width: 760px;
-      color: rgba(255, 255, 255, 0.74);
-      font-size: 18px;
-      line-height: 1.5;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(17px, 2.4vw, 22px);
+      line-height: 1.48;
     }
 
-    .grid {
+    code {
+      display: inline-block;
+      padding: 3px 7px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.42);
+      color: #ffd8a8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.9em;
+    }
+
+    .bitmap {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(8, 1fr);
+      gap: 8px;
+      padding: 18px;
+      border-radius: 26px;
+      background: rgba(0, 0, 0, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .pixel {
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .pixel.hot {
+      background: rgba(255, 138, 0, 0.78);
+      box-shadow: 0 0 24px rgba(255, 138, 0, 0.38);
+    }
+
+    .pixel.mid {
+      background: rgba(255, 138, 0, 0.26);
+    }
+
+    .caption {
+      margin-top: 14px;
+      color: var(--soft);
+      font-size: 13px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 14px;
-      margin-top: 28px;
     }
 
     .card {
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: 20px;
-      padding: 18px;
-      background: rgba(0, 0, 0, 0.24);
+      border-radius: 24px;
+      padding: 22px;
+    }
+
+    .num {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 14px;
+      color: #ffd8a8;
+      background: var(--orangeSoft);
+      border: 1px solid var(--orangeLine);
+      font-weight: 900;
     }
 
     .card strong {
       display: block;
       margin-bottom: 8px;
-      color: #ffffff;
+      font-size: 18px;
     }
 
     .card span {
-      color: rgba(255, 255, 255, 0.72);
-      font-size: 14px;
-      line-height: 1.45;
+      display: block;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.48;
     }
 
-    code {
-      display: inline-block;
-      padding: 3px 6px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.35);
-      color: #ffd6a8;
+    .benefits {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .benefit {
+      min-height: 130px;
+      border-radius: 22px;
+      padding: 18px;
+      background: var(--panel2);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .benefit b {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .benefit span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.42;
+    }
+
+    .banner {
+      border-radius: 24px;
+      padding: 20px 22px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .banner p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
     }
 
     button {
-      margin-top: 22px;
       border: 0;
       border-radius: 999px;
       padding: 12px 18px;
-      font-weight: bold;
-      cursor: pointer;
       background: #ffffff;
       color: #111111;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
     }
 
     .footer {
-      margin-top: 24px;
-      padding-top: 18px;
-      border-top: 1px solid rgba(255, 255, 255, 0.16);
-      color: rgba(255, 255, 255, 0.56);
+      text-align: center;
+      color: var(--soft);
       font-size: 13px;
-      word-break: break-all;
+      word-break: break-word;
+      padding-bottom: 6px;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        padding: 14px;
+      }
+
+      main {
+        min-height: calc(100vh - 28px);
+      }
+
+      .hero-inner,
+      .flow,
+      .benefits,
+      .banner {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        letter-spacing: -0.055em;
+      }
+
+      .bitmap {
+        grid-template-columns: repeat(8, 1fr);
+        gap: 6px;
+        padding: 14px;
+      }
     }
   </style>
 </head>
 
 <body>
   <main>
-    <div class="badge">🟧 Inscription Tester Demo</div>
+    <section class="hero">
+      <div class="hero-inner">
+        <div>
+          <div class="badge">🟧 Inscription Tester</div>
 
-    <h1>GitHub Build Loaded Into Ordinals</h1>
+          <h1>Test your Ordinals build before spending sats.</h1>
 
-    <p>
-      This file lives at <code>/build/index.html</code> in the GitHub repo.
-      The GitHub loader fetches it, sends it into the inscribed receiver using
-      <code>postMessage</code>, and the receiver renders it inside the Ordinals viewer.
-    </p>
+          <p class="lead">
+            This demo is loaded from <code>/build/index.html</code>.
+            Replace this file with your own HTML app or build output, then open the
+            GitHub Pages link to see how it renders inside the inscribed
+            <code>ordinals.com</code> receiver.
+          </p>
+        </div>
 
-    <div class="grid">
+        <div>
+          <div class="bitmap" aria-label="bitmap style visual">
+            <div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel hot"></div>
+            <div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div>
+            <div class="pixel mid"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div>
+            <div class="pixel"></div><div class="pixel"></div><div class="pixel mid"></div><div class="pixel hot"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div>
+            <div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div>
+            <div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel mid"></div><div class="pixel hot"></div><div class="pixel"></div>
+            <div class="pixel mid"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel mid"></div><div class="pixel hot"></div>
+            <div class="pixel hot"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel hot"></div><div class="pixel"></div><div class="pixel mid"></div>
+          </div>
+
+          <div class="caption">
+            GitHub Pages build → postMessage → Ordinals receiver
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="flow">
       <div class="card">
-        <strong>One receiver inscription</strong>
-        <span>Inscribe the receiver once and reuse it for unlimited projects.</span>
+        <div class="num">1</div>
+        <strong>Keep the root loader</strong>
+        <span>
+          Do not replace the root <code>/index.html</code>.
+          That file loads the receiver and sends your build into it.
+        </span>
       </div>
 
       <div class="card">
-        <strong>Dynamic builds</strong>
-        <span>Update the GitHub build and reload without reinscribing the receiver.</span>
+        <div class="num">2</div>
+        <strong>Replace the build file</strong>
+        <span>
+          Put your project here: <code>/build/index.html</code>.
+          For larger projects, also include <code>/build/assets/</code>.
+        </span>
       </div>
 
       <div class="card">
-        <strong>Open HTTPS support</strong>
-        <span>GitHub Pages, Vercel, Netlify, Cloudflare Pages, and HTTPS domains can use it.</span>
+        <div class="num">3</div>
+        <strong>Open and test</strong>
+        <span>
+          Open the GitHub Pages URL and check the build inside the
+          real Ordinals receiver environment.
+        </span>
       </div>
-    </div>
+    </section>
 
-    <button onclick="testApp()">Test JavaScript</button>
+    <section class="benefits">
+      <div class="benefit">
+        <b>No wasted sats</b>
+        <span>
+          Check layout, JavaScript, assets, and basic behaviour before paying to inscribe.
+        </span>
+      </div>
+
+      <div class="benefit">
+        <b>Device testing</b>
+        <span>
+          Open the same URL on phone, tablet, laptop, or desktop to catch responsive issues.
+        </span>
+      </div>
+
+      <div class="benefit">
+        <b>Fast iteration</b>
+        <span>
+          Update <code>/build/index.html</code>, refresh the page, and keep improving.
+        </span>
+      </div>
+
+      <div class="benefit">
+        <b>Vite / React friendly</b>
+        <span>
+          Use normal builds. For Vite, set <code>base: "./"</code> so assets resolve.
+        </span>
+      </div>
+    </section>
+
+    <section class="banner">
+      <p>
+        For this demo, load your own build here:
+        <code>/build/index.html</code>.
+        The root loader fetches it, sends it with <code>postMessage</code>,
+        and the receiver renders it on <code>ordinals.com</code>.
+      </p>
+
+      <button onclick="testBuild()">Test JavaScript</button>
+    </section>
 
     <div class="footer" id="where"></div>
   </main>
 
   <script>
-    function testApp() {
-      alert("JavaScript is running from the loaded build.");
+    function testBuild() {
+      alert("JavaScript is running from /build/index.html inside the receiver.");
     }
 
     document.getElementById("where").textContent =
-      "Current document location: " + window.location.href;
+      "Loaded build document: " + window.location.href;
   </script>
 </body>
 </html>
