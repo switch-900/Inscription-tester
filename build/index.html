@@ -116,6 +116,9 @@
       animation: blink 1.1s steps(2) infinite;
     }
 
+    .led.idle { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+    .led.err  { background: var(--magenta); box-shadow: 0 0 8px var(--magenta); }
+
     @keyframes blink {
       0%, 60%   { opacity: 1; }
       60.01%, 100% { opacity: 0.25; }
@@ -272,6 +275,40 @@
       line-height: 1.5;
     }
 
+    /* ----- BUILD STATUS BAR (above tool grid) ----- */
+    .build-bar {
+      background: #000;
+      border: 3px solid var(--orange);
+      padding: 10px 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      box-shadow: inset 0 0 24px rgba(247, 147, 26, 0.08);
+    }
+
+    .build-bar .label {
+      color: var(--orange);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .build-bar .info {
+      color: var(--dim);
+      font-size: 11px;
+      letter-spacing: 1px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .build-bar .info b { color: var(--green); font-weight: 900; }
+
     /* ----- TOOL GRID ----- */
     .tool {
       display: grid;
@@ -364,6 +401,9 @@
         inset  2px  2px 0 #ff80b8,
         0 0 0 #000;
     }
+
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button:disabled:active { transform: none; }
 
     input[type="file"] { display: none; }
 
@@ -516,7 +556,8 @@
     /* ----- RESPONSIVE ----- */
     @media (max-width: 900px) {
       body { padding: 8px; }
-      .hero, .tool, .status-bar { grid-template-columns: 1fr; }
+      .hero, .tool, .status-bar, .build-bar { grid-template-columns: 1fr; }
+      .build-bar { gap: 8px; }
       .panel.tool-panel { min-height: 420px; }
       iframe, textarea { min-height: 360px; }
       .panel-head { flex-direction: column; align-items: flex-start; }
@@ -531,19 +572,20 @@
 
     <!-- Marquee -->
     <div class="marquee">
-      <span class="left"><span class="led"></span>ORD-TESTER&nbsp;v1.0</span>
-      <span class="right">[ INSCRIBE-LESS BUILD HARNESS ]</span>
+      <span class="left"><span class="led" id="hwLed"></span>ORD-TESTER&nbsp;v1.0</span>
+      <span class="right">[ FORK · BUILD · TEST · INSCRIBE ]</span>
     </div>
 
     <!-- Hero -->
     <section class="panel hero">
       <div class="hero-left">
-        <span class="badge">Bitcoin · Ordinals · Sandbox</span>
-        <h1>Paste HTML.<br>Test before<br>spending sats.</h1>
+        <span class="badge">Bitcoin · Ordinals · Fork Harness</span>
+        <h1>Fork. Build.<br>Test before<br>spending sats.</h1>
         <p>
-          This file lives at <code>/build/index.html</code>.
-          Paste HTML below for quick tests, or replace this file with your real
-          build to run a full repo through the Ordinals receiver.
+          Fork this repo, drop your build into <code>/build/index.html</code>,
+          and the tester loads it directly into the Ordinals receiver — same
+          environment your inscription will render in. No wasted sats, no
+          throwaway test inscriptions.
         </p>
       </div>
 
@@ -553,36 +595,43 @@
         <div class="step">
           <div class="num">[01]</div>
           <div>
-            <b>Keep root index.html</b>
-            <span>The root page loads the inscribed ordinals.com receiver.</span>
+            <b>Fork the repo</b>
+            <span>Enable GitHub Pages on your fork. The root index.html is this tester.</span>
           </div>
         </div>
 
         <div class="step">
           <div class="num">[02]</div>
           <div>
-            <b>Paste or upload HTML</b>
-            <span>Use this page for quick tests without reinscribing.</span>
+            <b>Push your build to /build/</b>
+            <span>Place your app at <code>/build/index.html</code> + <code>/build/assets/</code>. Vite/React: set <code>base: "./"</code>.</span>
           </div>
         </div>
 
         <div class="step">
           <div class="num">[03]</div>
           <div>
-            <b>Test all devices</b>
-            <span>Phone, tablet, laptop, desktop. Hit FULLSCREEN for edge-to-edge.</span>
+            <b>Open Pages URL → auto-loads</b>
+            <span>Your build streams into the receiver. Test on every device. Hit FULLSCREEN to check edge-to-edge.</span>
           </div>
         </div>
       </ul>
     </section>
+
+    <!-- Build status -->
+    <div class="build-bar" id="buildBar">
+      <span class="label"><span class="led idle" id="buildLed"></span>BUILD</span>
+      <span class="info" id="buildInfo">Looking for /build/index.html…</span>
+      <button id="loadBuildBtn">↻ Reload build</button>
+    </div>
 
     <!-- Tool -->
     <section class="tool">
       <!-- Input panel -->
       <div class="panel tool-panel">
         <div class="panel-head">
-          <span class="title-line">HTML INPUT</span>
-          <small>Full document or fragment</small>
+          <span class="title-line">SOURCE</span>
+          <small>Loaded from /build or pasted manually</small>
         </div>
 
         <div class="panel-head" style="border-top:0;border-bottom:3px solid #000;background:var(--panel);">
@@ -594,14 +643,14 @@
           </div>
         </div>
 
-        <textarea id="htmlInput" spellcheck="false"></textarea>
+        <textarea id="htmlInput" spellcheck="false" placeholder="Loading from /build/index.html…"></textarea>
 
         <div class="base">
           <label for="baseUrl">[BASE URL]</label>
           <input
             id="baseUrl"
             type="text"
-            placeholder="Optional. Used for relative assets like ./assets/app.js"
+            placeholder="Auto-set to ./build/ when build loads"
           />
         </div>
       </div>
@@ -609,8 +658,8 @@
       <!-- Preview panel -->
       <div class="panel tool-panel">
         <div class="panel-head">
-          <span class="title-line">PREVIEW</span>
-          <small>Iframe before receiver load</small>
+          <span class="title-line">RECEIVER</span>
+          <small>Iframe sandbox · same as ordinals.com</small>
         </div>
 
         <div class="panel-head" style="border-top:0;border-bottom:3px solid #000;background:var(--panel);">
@@ -634,14 +683,14 @@
       </div>
     </section>
 
-    <!-- Status -->
+    <!-- Footer status -->
     <section class="status-bar">
       <p>
-        For a real project build, place your app at <code>/build/index.html</code>
-        and assets at <code>/build/assets/</code>.
+        Drop your build at <code>/build/index.html</code> + <code>/build/assets/</code>.
         For Vite/React, set <code>base: "./"</code> so relative assets resolve.
+        For one-off tests, paste HTML on the left and hit <code>PREVIEW</code>.
       </p>
-      <div id="status">READY</div>
+      <div id="status">BOOTING</div>
     </section>
 
   </main>
@@ -656,6 +705,9 @@
       var fileInput     = document.getElementById("fileInput");
       var fullscreenBtn = document.getElementById("fullscreenBtn");
       var fsExitBtn     = document.getElementById("fsExitBtn");
+      var loadBuildBtn  = document.getElementById("loadBuildBtn");
+      var buildLed      = document.getElementById("buildLed");
+      var buildInfo     = document.getElementById("buildInfo");
 
       var sampleHtml =
         '<!DOCTYPE html>\n' +
@@ -676,13 +728,21 @@
         '<body>\n' +
         '  <main>\n' +
         '    <h1>It works</h1>\n' +
-        '    <p>This HTML was pasted into the test tool and rendered inside the Ordinals receiver.</p>\n' +
+        '    <p>This HTML rendered inside the Ordinals receiver. Replace /build/index.html in your fork to test your real app.</p>\n' +
         '    <button onclick="alert(\'JavaScript works inside the test build\')">Test JS</button>\n' +
         '  </main>\n' +
         '</body>\n' +
         '</html>';
 
       function setStatus(message) { statusEl.textContent = message; }
+
+      function setBuildState(state, text) {
+        buildLed.classList.remove("idle", "err");
+        if (state === "idle") buildLed.classList.add("idle");
+        if (state === "err")  buildLed.classList.add("err");
+        // state "ok" leaves the green default
+        buildInfo.innerHTML = text;
+      }
 
       function escapeAttr(value) {
         return String(value || "").replace(/"/g, "&quot;");
@@ -695,7 +755,7 @@
       function wrapHtml(html, baseUrl) {
         var out = String(html || "").trim();
 
-        if (!out) throw new Error("Paste some HTML first.");
+        if (!out) throw new Error("No HTML to render.");
 
         var baseTag = "";
 
@@ -766,6 +826,51 @@
         htmlInput.value = "";
         preview.srcdoc = "";
         setStatus("CLEARED");
+      }
+
+      /* ---------- /build/ auto-loader ---------- */
+
+      async function loadBuildFile(silent) {
+        var buildUrl = new URL("./build/index.html", window.location.href).href;
+        var buildBase = new URL("./build/", window.location.href).href;
+
+        if (!silent) setBuildState("idle", "Fetching <b>./build/index.html</b>…");
+        setStatus("LOADING BUILD");
+
+        try {
+          var res = await fetch(buildUrl, { cache: "no-store" });
+
+          if (!res.ok) {
+            throw new Error("HTTP " + res.status);
+          }
+
+          var text = await res.text();
+
+          if (!text.trim()) {
+            throw new Error("File empty");
+          }
+
+          htmlInput.value = text;
+          baseUrlInput.value = buildBase;
+          renderPreview();
+
+          var size = (text.length / 1024).toFixed(1);
+          setBuildState(
+            "ok",
+            "Loaded <b>./build/index.html</b> · " + size + " KB · base <b>" +
+            new URL("./build/", window.location.href).pathname + "</b>"
+          );
+          setStatus("BUILD LOADED · " + size + " KB");
+          return true;
+        } catch (err) {
+          setBuildState(
+            "err",
+            "No build at <b>./build/index.html</b> (" + (err.message || "fetch failed") +
+            "). Push a build to your fork, or paste HTML manually."
+          );
+          setStatus("NO BUILD · USING SAMPLE");
+          return false;
+        }
       }
 
       /* ---------- Fullscreen ---------- */
@@ -853,6 +958,7 @@
         var reader = new FileReader();
         reader.onload = function () {
           htmlInput.value = String(reader.result || "");
+          setBuildState("idle", "Manual upload: <b>" + file.name + "</b> (overrides /build/)");
           setStatus("LOADED: " + file.name.toUpperCase());
           renderPreview();
         };
@@ -860,19 +966,32 @@
       });
 
       document.getElementById("previewBtn").addEventListener("click", renderPreview);
+
       document.getElementById("sampleBtn").addEventListener("click", function () {
         htmlInput.value = sampleHtml;
+        baseUrlInput.value = new URL("./", window.location.href).href;
+        setBuildState("idle", "Sample HTML loaded (overrides /build/)");
         renderPreview();
       });
+
       document.getElementById("renderBtn").addEventListener("click", renderInViewer);
       document.getElementById("copyBtn").addEventListener("click", copyHtml);
       document.getElementById("clearBtn").addEventListener("click", clearAll);
       fullscreenBtn.addEventListener("click", toggleFullscreen);
       fsExitBtn.addEventListener("click", function () { exitFs(); });
+      loadBuildBtn.addEventListener("click", function () { loadBuildFile(false); });
 
-      htmlInput.value = sampleHtml;
-      baseUrlInput.value = new URL("./", window.location.href).href;
-      renderPreview();
+      /* ---------- Init: try /build/, fall back to sample ---------- */
+
+      (async function init() {
+        var loaded = await loadBuildFile(false);
+
+        if (!loaded) {
+          htmlInput.value = sampleHtml;
+          baseUrlInput.value = new URL("./", window.location.href).href;
+          renderPreview();
+        }
+      })();
     })();
   </script>
 </body>
