@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Ordinal GitHub Build Loader</title>
+  <title>Ordinal Build Loader</title>
 
   <style>
     html,
@@ -19,14 +19,33 @@
     }
 
     #topbar {
-      height: 54px;
+      min-height: 64px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
+      gap: 12px;
+      padding: 8px 12px;
       box-sizing: border-box;
       background: #0b0b0b;
       border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    #info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    #title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    #status {
+      font-size: 12px;
+      opacity: 0.75;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     button {
@@ -37,19 +56,12 @@
       cursor: pointer;
       background: #ffffff;
       color: #111111;
-    }
-
-    #status {
-      font-size: 13px;
-      opacity: 0.75;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      flex: 0 0 auto;
     }
 
     iframe {
       width: 100%;
-      height: calc(100% - 54px);
+      height: calc(100% - 64px);
       border: 0;
       display: block;
       background: #000000;
@@ -60,7 +72,12 @@
 <body>
   <div id="topbar">
     <button id="reload">Reload build</button>
-    <div id="status">Starting loader...</div>
+    <div id="info">
+      <div id="title">Ordinal Build Loader</div>
+      <div id="status">
+        Keep this root index.html as the loader. Replace /build/index.html with your app.
+      </div>
+    </div>
   </div>
 
   <iframe
@@ -72,19 +89,23 @@
   <script>
     (function () {
       /*
-        This is your inscribed receiver.
+        This is the inscribed receiver.
+        The receiver stays on ordinals.com so the app renders in the correct ordinal environment.
       */
       var RECEIVER_URL =
         "https://ordinals.com/content/cfd4c6f93e596e58004aaae0fdda8931fa4c7c6f30c4501d202cb97f2a8c8beci0";
 
       /*
-        Your actual app/build goes here:
+        This is the app/build file that users replace.
 
-        /build/index.html
+        Keep this root file as the loader:
+          /index.html
 
-        So on GitHub Pages this becomes:
+        Replace this file with the actual app:
+          /build/index.html
 
-        https://switch-900.github.io/Inscription-tester/build/index.html
+        Larger apps can also use:
+          /build/assets/...
       */
       var BUILD_ENTRY = "./build/index.html";
 
@@ -107,14 +128,17 @@
       async function fetchBuildHtml() {
         var entryUrl = getEntryUrl();
 
-        setStatus("Fetching build: " + entryUrl);
+        setStatus("Fetching app from: " + entryUrl);
 
         var res = await fetch(entryUrl + "?t=" + Date.now(), {
           cache: "no-store"
         });
 
         if (!res.ok) {
-          throw new Error("Could not fetch build HTML. HTTP " + res.status);
+          throw new Error(
+            "Could not fetch /build/index.html. Replace or create that file first. HTTP " +
+              res.status
+          );
         }
 
         var html = await res.text();
@@ -182,7 +206,7 @@
         try {
           var receiverUrl = getReceiverUrl();
 
-          setStatus("Loading Ordinals receiver...");
+          setStatus("Loading inscribed receiver on ordinals.com...");
 
           iframe.src = receiverUrl;
 
@@ -192,11 +216,11 @@
 
           var build = await buildPromise;
 
-          setStatus("Sending build into Ordinals receiver...");
+          setStatus("Sending /build/index.html into the receiver...");
 
           postBuildToReceiver(build);
 
-          setStatus("Build sent to Ordinals receiver.");
+          setStatus("Loaded. To change the app, replace /build/index.html and click Reload build.");
         } catch (error) {
           console.error(error);
           setStatus(error.message || String(error));
