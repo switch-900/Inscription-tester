@@ -4,224 +4,429 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Ordinal Quick Test Tool</title>
+  <title>ORD-TESTER v1.0</title>
 
   <style>
-    * {
-      box-sizing: border-box;
+    :root {
+      --bg:        #0a0a0a;
+      --panel:     #1a1a1a;
+      --panel-2:   #222;
+      --orange:    #f7931a;
+      --orange-hi: #ffc56a;
+      --orange-lo: #a35e08;
+      --green:     #00ff41;
+      --green-dim: #00b82e;
+      --magenta:   #ff2e88;
+      --magenta-lo:#8a1a4a;
+      --cyan:      #00d4ff;
+      --cyan-lo:   #006a91;
+      --yellow:    #ffd60a;
+      --text:      #e8e8e8;
+      --dim:       #888;
+      --line:      #2e2e2e;
     }
 
-    html,
-    body {
+    * { box-sizing: border-box; }
+
+    html, body {
       margin: 0;
       width: 100%;
       min-height: 100%;
-      background: #050505;
-      color: #ffffff;
-      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Courier New", Consolas, Monaco, monospace;
+      font-size: 14px;
+      line-height: 1.45;
+      -webkit-font-smoothing: none;
+      image-rendering: pixelated;
     }
 
     body {
-      padding: 16px;
+      padding: 14px;
       background:
-        radial-gradient(circle at top left, rgba(255, 138, 0, 0.28), transparent 420px),
-        radial-gradient(circle at bottom right, rgba(80, 120, 255, 0.18), transparent 420px),
-        #050505;
+        radial-gradient(ellipse at center, rgba(0, 40, 0, 0.18), transparent 70%),
+        var(--bg);
+    }
+
+    /* CRT scanline overlay */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.25) 0,
+        rgba(0, 0, 0, 0.25) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      z-index: 9999;
+      mix-blend-mode: multiply;
+    }
+
+    /* Subtle screen vignette */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      box-shadow: inset 0 0 180px rgba(0, 0, 0, 0.85);
+      z-index: 9998;
     }
 
     main {
       width: min(1280px, 100%);
       margin: 0 auto;
       display: grid;
-      gap: 14px;
+      gap: 12px;
     }
 
-    .hero,
-    .panel,
-    .note {
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 24px;
-      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
-      backdrop-filter: blur(10px);
-    }
-
-    .hero {
-      padding: clamp(22px, 4vw, 42px);
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 18px;
+    /* ----- MARQUEE ----- */
+    .marquee {
+      background: var(--orange);
+      color: #000;
+      padding: 10px 14px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 900;
+      font-size: 12px;
+      border: 3px solid #000;
+      box-shadow:
+        inset -3px -3px 0 var(--orange-lo),
+        inset  3px  3px 0 var(--orange-hi),
+        0 4px 0 #000;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
+
+    .marquee .left  { display: flex; align-items: center; gap: 10px; }
+    .marquee .right { display: flex; align-items: center; gap: 10px; font-size: 10px; }
+
+    .led {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      border: 1px solid #000;
+      animation: blink 1.1s steps(2) infinite;
+    }
+
+    @keyframes blink {
+      0%, 60%   { opacity: 1; }
+      60.01%, 100% { opacity: 0.25; }
+    }
+
+    /* ----- PANELS (chunky bevel) ----- */
+    .panel {
+      background: var(--panel);
+      border: 3px solid #000;
+      box-shadow:
+        inset -3px -3px 0 #000,
+        inset  3px  3px 0 #4a4a4a,
+        0 4px 0 #000;
+    }
+
+    .panel-head {
+      background: var(--panel-2);
+      color: var(--orange);
+      padding: 9px 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 11px;
+      border-bottom: 3px solid #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head small {
+      color: var(--dim);
+      font-weight: 400;
+      letter-spacing: 1px;
+      font-size: 10px;
+    }
+
+    .panel-head .title-line { display: flex; align-items: center; gap: 8px; }
+    .panel-head .title-line::before {
+      content: ">>";
+      color: var(--green);
+    }
+
+    /* ----- HERO ----- */
+    .hero {
+      padding: clamp(18px, 3vw, 28px);
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .hero-left { display: flex; flex-direction: column; justify-content: center; }
 
     .badge {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      color: #ffd8a8;
-      background: rgba(255, 138, 0, 0.18);
-      border: 1px solid rgba(255, 138, 0, 0.45);
-      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: #000;
+      color: var(--green);
+      border: 2px solid var(--green);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       font-weight: 900;
+      width: fit-content;
+      text-shadow: 0 0 6px rgba(0, 255, 65, 0.6);
+    }
+
+    .badge::before {
+      content: "█";
+      color: var(--orange);
+      text-shadow: 0 0 4px var(--orange);
     }
 
     h1 {
-      margin: 16px 0 10px;
-      font-size: clamp(38px, 7vw, 76px);
-      line-height: 0.92;
-      letter-spacing: -0.06em;
+      margin: 14px 0 12px;
+      font-size: clamp(26px, 5vw, 48px);
+      line-height: 1.05;
+      letter-spacing: 2px;
+      color: var(--orange);
+      text-transform: uppercase;
+      text-shadow:
+        3px 3px 0 #000,
+        6px 6px 0 var(--magenta);
+      font-weight: 900;
     }
 
-    p {
+    .hero p {
       margin: 0;
-      color: rgba(255, 255, 255, 0.72);
-      line-height: 1.5;
+      color: var(--text);
+      font-size: 13px;
     }
 
     code {
-      padding: 3px 7px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.45);
-      color: #ffd8a8;
-      font-family: Consolas, Monaco, monospace;
+      padding: 2px 6px;
+      background: #000;
+      color: var(--green);
+      border: 1px solid var(--line);
+      font-family: inherit;
+      text-shadow: 0 0 4px rgba(0, 255, 65, 0.5);
     }
 
-    .steps {
-      display: grid;
+    /* ----- HOW-TO LIST (terminal box) ----- */
+    .how-to {
+      background: #000;
+      border: 3px solid var(--green-dim);
+      padding: 12px 14px;
+      box-shadow: inset 0 0 24px rgba(0, 255, 65, 0.08);
+      display: flex;
+      flex-direction: column;
       gap: 10px;
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .how-to-title {
+      color: var(--green);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-bottom: 1px dashed var(--green-dim);
+      padding-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .step {
       display: grid;
-      grid-template-columns: 30px 1fr;
-      gap: 10px;
+      grid-template-columns: 42px 1fr;
+      gap: 8px;
+      align-items: start;
     }
 
-    .num {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: rgba(255, 138, 0, 0.18);
-      border: 1px solid rgba(255, 138, 0, 0.45);
-      color: #ffd8a8;
+    .step .num {
+      color: var(--orange);
       font-weight: 900;
+      font-size: 12px;
+      text-shadow: 0 0 6px rgba(247, 147, 26, 0.5);
     }
 
     .step b {
       display: block;
-      margin-bottom: 3px;
+      color: var(--green);
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+      text-shadow: 0 0 4px rgba(0, 255, 65, 0.4);
     }
 
     .step span {
-      color: rgba(255, 255, 255, 0.68);
-      font-size: 14px;
-      line-height: 1.4;
+      color: var(--dim);
+      font-size: 11px;
+      line-height: 1.5;
     }
 
+    /* ----- TOOL GRID ----- */
     .tool {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 12px;
     }
 
-    .panel {
-      overflow: hidden;
-      min-height: 520px;
+    .panel.tool-panel {
       display: flex;
       flex-direction: column;
+      min-height: 540px;
     }
 
-    .head {
-      min-height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 12px 14px;
-      background: rgba(0, 0, 0, 0.32);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    }
-
-    .head small {
-      color: rgba(255, 255, 255, 0.55);
-    }
-
+    /* ----- BUTTONS ----- */
     .buttons {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
 
-    button,
-    .file {
-      border: 0;
-      border-radius: 999px;
-      padding: 10px 14px;
-      background: #ffffff;
-      color: #111111;
+    button, .file {
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
       font-weight: 900;
+      padding: 9px 12px;
+      border: 2px solid #000;
+      background: var(--orange);
+      color: #000;
       cursor: pointer;
-      font-size: 13px;
+      box-shadow:
+        inset -2px -2px 0 var(--orange-lo),
+        inset  2px  2px 0 var(--orange-hi),
+        3px 3px 0 #000;
+      transition: transform 0.04s linear, box-shadow 0.04s linear;
+      user-select: none;
     }
 
-    .ghost,
-    .file {
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.16);
+    button:hover, .file:hover { filter: brightness(1.08); }
+
+    button:active, .file:active {
+      transform: translate(3px, 3px);
+      box-shadow:
+        inset -2px -2px 0 var(--orange-lo),
+        inset  2px  2px 0 var(--orange-hi),
+        0 0 0 #000;
     }
 
-    .danger {
-      background: #ff6868;
-      color: #190000;
+    button.alt {
+      background: var(--cyan);
+      box-shadow:
+        inset -2px -2px 0 var(--cyan-lo),
+        inset  2px  2px 0 #80eaff,
+        3px 3px 0 #000;
+    }
+    button.alt:active {
+      box-shadow:
+        inset -2px -2px 0 var(--cyan-lo),
+        inset  2px  2px 0 #80eaff,
+        0 0 0 #000;
     }
 
-    input[type="file"] {
-      display: none;
+    button.ghost, .file {
+      background: var(--panel-2);
+      color: var(--text);
+      box-shadow:
+        inset -2px -2px 0 #000,
+        inset  2px  2px 0 #555,
+        3px 3px 0 #000;
+    }
+    button.ghost:active, .file:active {
+      box-shadow:
+        inset -2px -2px 0 #000,
+        inset  2px  2px 0 #555,
+        0 0 0 #000;
     }
 
+    button.danger {
+      background: var(--magenta);
+      color: #fff;
+      box-shadow:
+        inset -2px -2px 0 var(--magenta-lo),
+        inset  2px  2px 0 #ff80b8,
+        3px 3px 0 #000;
+    }
+    button.danger:active {
+      box-shadow:
+        inset -2px -2px 0 var(--magenta-lo),
+        inset  2px  2px 0 #ff80b8,
+        0 0 0 #000;
+    }
+
+    input[type="file"] { display: none; }
+
+    /* ----- TEXTAREA: green-on-black terminal ----- */
     textarea {
       width: 100%;
       flex: 1;
-      min-height: 430px;
+      min-height: 420px;
       resize: vertical;
       border: 0;
       outline: none;
-      padding: 16px;
-      background: rgba(0, 0, 0, 0.58);
-      color: #f6f6f6;
-      font: 13px/1.5 Consolas, Monaco, monospace;
+      padding: 14px;
+      background: #000;
+      color: var(--green);
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.5;
+      text-shadow: 0 0 4px rgba(0, 255, 65, 0.4);
+      caret-color: var(--green);
     }
 
+    textarea::selection { background: var(--green-dim); color: #000; text-shadow: none; }
+
+    /* ----- BASE URL ROW ----- */
     .base {
       display: grid;
-      grid-template-columns: 82px 1fr;
-      gap: 8px;
+      grid-template-columns: 110px 1fr;
+      gap: 10px;
       align-items: center;
-      padding: 12px 14px;
-      border-top: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(0, 0, 0, 0.25);
+      padding: 10px 14px;
+      border-top: 3px solid #000;
+      background: var(--panel-2);
     }
 
     .base label {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 13px;
-      font-weight: 800;
+      color: var(--orange);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
     }
 
     input[type="text"] {
       width: 100%;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: rgba(0, 0, 0, 0.42);
-      color: #ffffff;
+      background: #000;
+      color: var(--green);
+      border: 2px solid var(--line);
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 12px;
       outline: none;
+      text-shadow: 0 0 4px rgba(0, 255, 65, 0.4);
+    }
+
+    input[type="text"]:focus { border-color: var(--green); }
+
+    /* ----- PREVIEW IFRAME ----- */
+    .preview-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      background: #fff;
+      border-top: 3px solid #000;
     }
 
     iframe {
@@ -229,73 +434,124 @@
       flex: 1;
       min-height: 520px;
       border: 0;
-      background: #ffffff;
+      background: #fff;
     }
 
-    .note {
-      padding: 14px 16px;
+    /* Fullscreen behavior */
+    .preview-wrap:fullscreen,
+    .preview-wrap:-webkit-full-screen {
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      border: 0;
+    }
+    .preview-wrap:fullscreen iframe,
+    .preview-wrap:-webkit-full-screen iframe {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+    }
+
+    .fs-exit {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 10;
+      display: none;
+      padding: 8px 12px;
+      background: #000;
+      color: var(--orange);
+      border: 2px solid var(--orange);
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(247, 147, 26, 0.5);
+    }
+
+    .preview-wrap:fullscreen .fs-exit,
+    .preview-wrap:-webkit-full-screen .fs-exit { display: inline-block; }
+
+    /* ----- STATUS BAR ----- */
+    .status-bar {
+      background: #000;
+      border: 3px solid var(--green-dim);
+      box-shadow: inset 0 0 24px rgba(0, 255, 65, 0.08);
+      padding: 10px 14px;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 12px;
       align-items: center;
     }
 
-    #status {
-      color: #ffd8a8;
-      font-size: 13px;
-      word-break: break-word;
+    .status-bar p {
+      margin: 0;
+      color: var(--text);
+      font-size: 12px;
     }
 
+    .status-bar p code { color: var(--orange); }
+
+    #status {
+      color: var(--green);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 900;
+      text-shadow: 0 0 6px rgba(0, 255, 65, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    #status::before {
+      content: "█";
+      color: var(--green);
+      animation: blink 1s steps(2) infinite;
+    }
+
+    /* ----- RESPONSIVE ----- */
     @media (max-width: 900px) {
-      body {
-        padding: 10px;
-      }
-
-      .hero,
-      .tool,
-      .note {
-        grid-template-columns: 1fr;
-      }
-
-      .panel {
-        min-height: 420px;
-      }
-
-      iframe,
-      textarea {
-        min-height: 360px;
-      }
-
-      .head {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .base {
-        grid-template-columns: 1fr;
-      }
+      body { padding: 8px; }
+      .hero, .tool, .status-bar { grid-template-columns: 1fr; }
+      .panel.tool-panel { min-height: 420px; }
+      iframe, textarea { min-height: 360px; }
+      .panel-head { flex-direction: column; align-items: flex-start; }
+      .base { grid-template-columns: 1fr; }
+      h1 { text-shadow: 2px 2px 0 #000, 4px 4px 0 var(--magenta); }
     }
   </style>
 </head>
 
 <body>
   <main>
-    <section class="hero">
-      <div>
-        <div class="badge">🟧 Ordinals Quick Test Tool</div>
 
-        <h1>Paste HTML. Test before spending sats.</h1>
+    <!-- Marquee -->
+    <div class="marquee">
+      <span class="left"><span class="led"></span>ORD-TESTER&nbsp;v1.0</span>
+      <span class="right">[ INSCRIBE-LESS BUILD HARNESS ]</span>
+    </div>
 
+    <!-- Hero -->
+    <section class="panel hero">
+      <div class="hero-left">
+        <span class="badge">Bitcoin · Ordinals · Sandbox</span>
+        <h1>Paste HTML.<br>Test before<br>spending sats.</h1>
         <p>
           This file lives at <code>/build/index.html</code>.
-          Paste HTML below to test quickly, or replace this file with your real build
-          when you want to test a full repo build through the Ordinals receiver.
+          Paste HTML below for quick tests, or replace this file with your real
+          build to run a full repo through the Ordinals receiver.
         </p>
       </div>
 
-      <div class="steps">
+      <ul class="how-to">
+        <div class="how-to-title">// HOW-TO.TXT</div>
+
         <div class="step">
-          <div class="num">1</div>
+          <div class="num">[01]</div>
           <div>
             <b>Keep root index.html</b>
             <span>The root page loads the inscribed ordinals.com receiver.</span>
@@ -303,7 +559,7 @@
         </div>
 
         <div class="step">
-          <div class="num">2</div>
+          <div class="num">[02]</div>
           <div>
             <b>Paste or upload HTML</b>
             <span>Use this page for quick tests without reinscribing.</span>
@@ -311,28 +567,29 @@
         </div>
 
         <div class="step">
-          <div class="num">3</div>
+          <div class="num">[03]</div>
           <div>
-            <b>Test devices</b>
-            <span>Open the GitHub Pages link on phone, tablet, laptop, and desktop.</span>
+            <b>Test all devices</b>
+            <span>Phone, tablet, laptop, desktop. Hit FULLSCREEN for edge-to-edge.</span>
           </div>
         </div>
-      </div>
+      </ul>
     </section>
 
+    <!-- Tool -->
     <section class="tool">
-      <div class="panel">
-        <div class="head">
-          <div>
-            <b>HTML input</b><br />
-            <small>Full HTML document or simple fragment</small>
-          </div>
+      <!-- Input panel -->
+      <div class="panel tool-panel">
+        <div class="panel-head">
+          <span class="title-line">HTML INPUT</span>
+          <small>Full document or fragment</small>
+        </div>
 
+        <div class="panel-head" style="border-top:0;border-bottom:3px solid #000;background:var(--panel);">
           <div class="buttons">
-            <button id="previewBtn">Preview</button>
+            <button id="previewBtn">▶ Preview</button>
             <button class="ghost" id="sampleBtn">Sample</button>
-
-            <label class="file" for="fileInput">Upload</label>
+            <label class="file" for="fileInput">↑ Upload</label>
             <input id="fileInput" type="file" accept=".html,.htm,text/html,text/plain" />
           </div>
         </div>
@@ -340,7 +597,7 @@
         <textarea id="htmlInput" spellcheck="false"></textarea>
 
         <div class="base">
-          <label for="baseUrl">Base URL</label>
+          <label for="baseUrl">[BASE URL]</label>
           <input
             id="baseUrl"
             type="text"
@@ -349,42 +606,56 @@
         </div>
       </div>
 
-      <div class="panel">
-        <div class="head">
-          <div>
-            <b>Preview</b><br />
-            <small>Iframe preview before loading into the receiver</small>
-          </div>
+      <!-- Preview panel -->
+      <div class="panel tool-panel">
+        <div class="panel-head">
+          <span class="title-line">PREVIEW</span>
+          <small>Iframe before receiver load</small>
+        </div>
 
+        <div class="panel-head" style="border-top:0;border-bottom:3px solid #000;background:var(--panel);">
           <div class="buttons">
-            <button class="ghost" id="renderBtn">Render in viewer</button>
+            <button id="fullscreenBtn" title="Toggle fullscreen (F)">⛶ Fullscreen</button>
+            <button class="alt" id="renderBtn">Render in viewer</button>
             <button class="ghost" id="copyBtn">Copy</button>
-            <button class="danger" id="clearBtn">Clear</button>
+            <button class="danger" id="clearBtn">✕ Clear</button>
           </div>
         </div>
 
-        <iframe id="preview" title="HTML preview"></iframe>
+        <div class="preview-wrap" id="previewWrap">
+          <iframe
+            id="preview"
+            title="HTML preview"
+            allow="fullscreen; accelerometer; autoplay; camera; encrypted-media; geolocation; gyroscope; microphone; midi; xr-spatial-tracking; clipboard-read; clipboard-write"
+            allowfullscreen
+          ></iframe>
+          <button class="fs-exit" id="fsExitBtn" title="Exit fullscreen (Esc)">✕ Exit</button>
+        </div>
       </div>
     </section>
 
-    <section class="note">
+    <!-- Status -->
+    <section class="status-bar">
       <p>
-        For a real project build, put your app at <code>/build/index.html</code>
+        For a real project build, place your app at <code>/build/index.html</code>
         and assets at <code>/build/assets/</code>.
-        For Vite/React, set <code>base: "./"</code> so relative assets work.
+        For Vite/React, set <code>base: "./"</code> so relative assets resolve.
       </p>
-
-      <div id="status">Ready.</div>
+      <div id="status">READY</div>
     </section>
+
   </main>
 
   <script>
     (function () {
-      var htmlInput = document.getElementById("htmlInput");
-      var baseUrlInput = document.getElementById("baseUrl");
-      var preview = document.getElementById("preview");
-      var statusEl = document.getElementById("status");
-      var fileInput = document.getElementById("fileInput");
+      var htmlInput     = document.getElementById("htmlInput");
+      var baseUrlInput  = document.getElementById("baseUrl");
+      var preview       = document.getElementById("preview");
+      var previewWrap   = document.getElementById("previewWrap");
+      var statusEl      = document.getElementById("status");
+      var fileInput     = document.getElementById("fileInput");
+      var fullscreenBtn = document.getElementById("fullscreenBtn");
+      var fsExitBtn     = document.getElementById("fsExitBtn");
 
       var sampleHtml =
         '<!DOCTYPE html>\n' +
@@ -394,26 +665,24 @@
         '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
         '  <title>My Ordinals Test</title>\n' +
         '  <style>\n' +
-        '    html, body { margin: 0; min-height: 100%; background: #050505; color: white; font-family: Arial; }\n' +
+        '    html, body { margin: 0; min-height: 100%; background: #050505; color: white; font-family: "Courier New", monospace; }\n' +
         '    body { display: grid; place-items: center; padding: 24px; box-sizing: border-box; }\n' +
-        '    main { max-width: 760px; padding: 32px; border-radius: 28px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); text-align: center; }\n' +
-        '    h1 { font-size: clamp(42px,8vw,78px); line-height: .92; letter-spacing: -.06em; margin: 0 0 14px; }\n' +
-        '    p { color: rgba(255,255,255,.72); line-height: 1.5; }\n' +
-        '    button { border: 0; border-radius: 999px; padding: 12px 18px; font-weight: 900; cursor: pointer; }\n' +
+        '    main { max-width: 760px; padding: 32px; background: #111; border: 3px solid #f7931a; text-align: center; box-shadow: 6px 6px 0 #000; }\n' +
+        '    h1 { font-size: clamp(32px,7vw,64px); letter-spacing: 2px; margin: 0 0 14px; color: #f7931a; text-shadow: 3px 3px 0 #000; text-transform: uppercase; }\n' +
+        '    p { color: #00ff41; line-height: 1.5; }\n' +
+        '    button { border: 2px solid #000; padding: 12px 18px; font-weight: 900; cursor: pointer; background: #f7931a; color: #000; box-shadow: 3px 3px 0 #000; font-family: inherit; }\n' +
         '  </style>\n' +
         '</head>\n' +
         '<body>\n' +
         '  <main>\n' +
-        '    <h1>It works 🟧</h1>\n' +
-        '    <p>This HTML was pasted into the quick test tool and rendered inside the Ordinals receiver.</p>\n' +
+        '    <h1>It works</h1>\n' +
+        '    <p>This HTML was pasted into the test tool and rendered inside the Ordinals receiver.</p>\n' +
         '    <button onclick="alert(\'JavaScript works inside the test build\')">Test JS</button>\n' +
         '  </main>\n' +
         '</body>\n' +
         '</html>';
 
-      function setStatus(message) {
-        statusEl.textContent = message;
-      }
+      function setStatus(message) { statusEl.textContent = message; }
 
       function escapeAttr(value) {
         return String(value || "").replace(/"/g, "&quot;");
@@ -426,9 +695,7 @@
       function wrapHtml(html, baseUrl) {
         var out = String(html || "").trim();
 
-        if (!out) {
-          throw new Error("Paste some HTML first.");
-        }
+        if (!out) throw new Error("Paste some HTML first.");
 
         var baseTag = "";
 
@@ -446,7 +713,6 @@
               out = out.replace(/<html([^>]*)>/i, "<html$1><head>" + baseTag + "</head>");
             }
           }
-
           return out;
         }
 
@@ -468,71 +734,141 @@
       function renderPreview() {
         try {
           preview.srcdoc = wrapHtml(htmlInput.value, getBaseUrl());
-          setStatus("Preview rendered.");
+          setStatus("RENDERED");
         } catch (error) {
           console.error(error);
-          setStatus(error.message || String(error));
+          setStatus("ERR: " + (error.message || String(error)));
         }
       }
 
       function renderInViewer() {
         try {
           var finalHtml = wrapHtml(htmlInput.value, getBaseUrl());
-
           document.open();
           document.write(finalHtml);
           document.close();
         } catch (error) {
           console.error(error);
-          setStatus(error.message || String(error));
+          setStatus("ERR: " + (error.message || String(error)));
         }
       }
 
       async function copyHtml() {
         try {
           await navigator.clipboard.writeText(htmlInput.value);
-          setStatus("HTML copied.");
+          setStatus("COPIED");
         } catch (error) {
-          setStatus("Copy failed. Select the text and copy manually.");
+          setStatus("ERR: COPY FAILED");
         }
       }
 
       function clearAll() {
         htmlInput.value = "";
         preview.srcdoc = "";
-        setStatus("Cleared.");
+        setStatus("CLEARED");
       }
 
-      fileInput.addEventListener("change", function () {
-        var file = fileInput.files && fileInput.files[0];
+      /* ---------- Fullscreen ---------- */
 
-        if (!file) {
+      function fsElement() {
+        return (
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
+          document.msFullscreenElement ||
+          null
+        );
+      }
+
+      function requestFs(el) {
+        var fn =
+          el.requestFullscreen ||
+          el.webkitRequestFullscreen ||
+          el.mozRequestFullScreen ||
+          el.msRequestFullscreen;
+
+        if (!fn) return Promise.reject(new Error("Fullscreen not supported."));
+
+        var result = fn.call(el);
+        return result && result.then ? result : Promise.resolve();
+      }
+
+      function exitFs() {
+        var fn =
+          document.exitFullscreen ||
+          document.webkitExitFullscreen ||
+          document.mozCancelFullScreen ||
+          document.msExitFullscreen;
+
+        if (!fn) return Promise.resolve();
+
+        var result = fn.call(document);
+        return result && result.then ? result : Promise.resolve();
+      }
+
+      function toggleFullscreen() {
+        if (fsElement()) {
+          exitFs().catch(function (err) { setStatus("ERR: " + (err.message || "exit failed")); });
           return;
         }
 
-        var reader = new FileReader();
+        if (!preview.srcdoc) renderPreview();
 
+        requestFs(previewWrap).then(
+          function () { setStatus("FULLSCREEN — ESC TO EXIT"); },
+          function (err) { setStatus("ERR: " + (err.message || "denied")); }
+        );
+      }
+
+      function onFsChange() {
+        fullscreenBtn.textContent = fsElement() ? "⤡ Exit fullscreen" : "⛶ Fullscreen";
+      }
+
+      [
+        "fullscreenchange",
+        "webkitfullscreenchange",
+        "mozfullscreenchange",
+        "MSFullscreenChange"
+      ].forEach(function (evt) { document.addEventListener(evt, onFsChange); });
+
+      // Keyboard: F toggles fullscreen, ignored while typing
+      document.addEventListener("keydown", function (e) {
+        if (e.key !== "f" && e.key !== "F") return;
+
+        var t = e.target;
+        var tag = t && t.tagName;
+
+        if (tag === "TEXTAREA" || tag === "INPUT" || (t && t.isContentEditable)) return;
+
+        e.preventDefault();
+        toggleFullscreen();
+      });
+
+      /* ---------- Wire up ---------- */
+
+      fileInput.addEventListener("change", function () {
+        var file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+
+        var reader = new FileReader();
         reader.onload = function () {
           htmlInput.value = String(reader.result || "");
-          setStatus("Loaded: " + file.name);
+          setStatus("LOADED: " + file.name.toUpperCase());
           renderPreview();
         };
-
         reader.readAsText(file);
       });
 
       document.getElementById("previewBtn").addEventListener("click", renderPreview);
-
       document.getElementById("sampleBtn").addEventListener("click", function () {
         htmlInput.value = sampleHtml;
         renderPreview();
       });
-
       document.getElementById("renderBtn").addEventListener("click", renderInViewer);
-
       document.getElementById("copyBtn").addEventListener("click", copyHtml);
-
       document.getElementById("clearBtn").addEventListener("click", clearAll);
+      fullscreenBtn.addEventListener("click", toggleFullscreen);
+      fsExitBtn.addEventListener("click", function () { exitFs(); });
 
       htmlInput.value = sampleHtml;
       baseUrlInput.value = new URL("./", window.location.href).href;
