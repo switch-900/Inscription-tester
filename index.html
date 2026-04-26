@@ -4,129 +4,262 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Ordinal GitHub Build Loader</title>
+  <title>Ordinal Build Launcher</title>
 
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050505;
+      --panel: rgba(255, 255, 255, 0.075);
+      --panel-2: rgba(255, 255, 255, 0.11);
+      --border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.68);
+      --soft: rgba(255, 255, 255, 0.48);
+      --danger: #ffb4b4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     html,
     body {
       margin: 0;
       width: 100%;
-      height: 100%;
-      background: #050505;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.12), transparent 30rem),
+        radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.08), transparent 28rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     body {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      place-items: center;
+      padding: 22px;
     }
 
-    #topbar {
-      min-height: 58px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      box-sizing: border-box;
-      background: #0b0b0b;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-      flex: 0 0 auto;
+    main {
+      width: min(860px, 100%);
+      display: grid;
+      gap: 14px;
     }
 
-    button {
-      border: 0;
+    .card {
+      padding: 24px;
+      border-radius: 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(12px);
+    }
+
+    .eyebrow {
+      width: fit-content;
+      padding: 6px 10px;
       border-radius: 999px;
-      padding: 9px 14px;
-      font-weight: bold;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(30px, 6vw, 58px);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button,
+    a.button {
+      appearance: none;
+      border: 0;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 800;
       cursor: pointer;
       background: #ffffff;
       color: #111111;
+      font-size: 14px;
     }
 
-    button.secondary {
-      background: rgba(255, 255, 255, 0.14);
+    button.secondary,
+    a.button.secondary {
+      background: rgba(255, 255, 255, 0.12);
       color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 170px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.35);
+      color: #ffffff;
+      padding: 12px;
+      outline: none;
+      resize: vertical;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 13px;
+      line-height: 1.45;
     }
 
     #status {
-      min-width: 0;
-      flex: 1;
+      min-height: 22px;
+      color: var(--soft);
       font-size: 13px;
-      opacity: 0.78;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      word-break: break-word;
+      margin-top: 12px;
     }
 
-    iframe {
-      width: 100%;
-      flex: 1;
-      min-height: 0;
-      border: 0;
-      background: #000000;
+    #status.error {
+      color: var(--danger);
     }
 
-    @media (max-width: 700px) {
-      #topbar {
-        flex-wrap: wrap;
+    .small {
+      color: var(--soft);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 740px) {
+      body {
+        padding: 14px;
       }
 
-      #status {
-        flex-basis: 100%;
-        white-space: normal;
+      .card {
+        padding: 18px;
+        border-radius: 20px;
       }
 
-      button {
-        flex: 1;
+      button,
+      a.button {
+        width: 100%;
+        text-align: center;
       }
     }
   </style>
 </head>
 
 <body>
-  <div id="topbar">
-    <button id="reload">Reload build</button>
-    <button id="fullscreen" class="secondary">Full screen</button>
-    <div id="status">Loading Ordinals HTML receiver...</div>
-  </div>
+  <main>
+    <section class="card">
+      <div class="eyebrow">GitHub Pages → ordinals.com</div>
 
-  <iframe
-    id="ordinal-frame"
-    title="Ordinals HTML Receiver"
-    allow="fullscreen; autoplay; clipboard-read; clipboard-write; encrypted-media; camera; microphone; geolocation; accelerometer; gyroscope"
-    allowfullscreen
-  ></iframe>
+      <h1>Ordinal Build Launcher</h1>
+
+      <p>
+        This page automatically checks for <code>/build/index.html</code>.
+        If it exists, it launches it into the latest Ordinal receiver on sat
+        <code>25483050759410</code>.
+      </p>
+
+      <p>
+        The build is passed through <code>window.name</code>, then this same tab
+        redirects to <code>ordinals.com</code>. No iframe. No popup.
+      </p>
+
+      <div class="actions">
+        <button id="launch">Launch build now</button>
+        <button id="check" class="secondary">Check build</button>
+        <button id="clear-name" class="secondary">Clear window.name</button>
+        <a
+          class="button secondary"
+          href="https://ordinals.com/r/sat/25483050759410/at/-1/content"
+          target="_blank"
+          rel="noopener"
+        >
+          Open receiver
+        </a>
+      </div>
+
+      <div id="status">Checking for /build/index.html...</div>
+    </section>
+
+    <section class="card">
+      <p>
+        Quick paste test
+      </p>
+
+      <textarea
+        id="manual-html"
+        placeholder="Paste HTML here to launch pasted code instead of /build/index.html"
+      ></textarea>
+
+      <div class="actions">
+        <button id="launch-manual" class="secondary">Launch pasted HTML</button>
+      </div>
+
+      <p class="small">
+        Normal use: replace <code>/build/index.html</code> with the app you want to test.
+        If that file exists, this launcher will auto-load it.
+      </p>
+    </section>
+  </main>
 
   <script>
     (function () {
-      /*
-        This is the EXISTING Ordinals HTML viewer.
-        It already works when you paste HTML into it.
-      */
-      var RECEIVER_URL =
-        "https://ordinals.com/content/33064f05445f5c4d97d6a70585e70cdabb0b52690e61d611afb2b4091aca614bi0";
-
-      /*
-        This is the file you replace in your repo.
-        Put your test app here:
-          /build/index.html
-      */
+      var RECEIVER_URL = "https://ordinals.com/r/sat/25483050759410/at/-1/content";
       var BUILD_ENTRY = "./build/index.html";
 
-      var frame = document.getElementById("ordinal-frame");
-      var statusEl = document.getElementById("status");
-      var reloadBtn = document.getElementById("reload");
-      var fullscreenBtn = document.getElementById("fullscreen");
+      /*
+        true = automatically launch /build/index.html if it exists.
+      */
+      var AUTO_LAUNCH_IF_BUILD_EXISTS = true;
 
-      function setStatus(message) {
+      var launchBtn = document.getElementById("launch");
+      var checkBtn = document.getElementById("check");
+      var clearNameBtn = document.getElementById("clear-name");
+      var launchManualBtn = document.getElementById("launch-manual");
+      var manualHtml = document.getElementById("manual-html");
+      var statusEl = document.getElementById("status");
+
+      function setStatus(message, isError) {
         statusEl.textContent = message;
+        statusEl.className = isError ? "error" : "";
       }
 
-      function buildEntryUrl() {
-        return new URL(BUILD_ENTRY, window.location.href).href;
+      function setBusy(isBusy) {
+        launchBtn.disabled = isBusy;
+        checkBtn.disabled = isBusy;
+        launchManualBtn.disabled = isBusy;
+      }
+
+      function bytes(text) {
+        return new TextEncoder().encode(String(text || "")).length;
       }
 
       function cacheBust(url) {
@@ -135,116 +268,165 @@
         return u.href;
       }
 
-      async function fetchBuildHtml() {
-        var url = buildEntryUrl();
+      function getBuildUrl() {
+        return new URL(BUILD_ENTRY, window.location.href).href;
+      }
 
-        setStatus("Fetching " + url);
+      async function fetchBuildHtml(options) {
+        var silent = options && options.silent;
+        var buildUrl = getBuildUrl();
 
-        var response = await fetch(cacheBust(url), {
+        if (!silent) {
+          setStatus("Fetching " + buildUrl);
+        }
+
+        var response = await fetch(cacheBust(buildUrl), {
           cache: "no-store"
         });
 
         if (!response.ok) {
-          throw new Error("Could not fetch /build/index.html. HTTP " + response.status);
+          throw new Error("No build found at " + BUILD_ENTRY + ". HTTP " + response.status);
         }
 
         var html = await response.text();
 
         if (!html.trim()) {
-          throw new Error("/build/index.html is empty.");
+          throw new Error(BUILD_ENTRY + " exists but is empty.");
         }
 
-        return html;
-      }
-
-      function postHtmlToReceiver(html) {
-        var payload = {
-          type: "html-view:render",
-          html: html
+        return {
+          html: html,
+          buildUrl: buildUrl
         };
-
-        /*
-          Send a few times because the iframe may still be booting.
-          The receiver ignores duplicates after it document.writes anyway.
-        */
-        var tries = 0;
-
-        var timer = setInterval(function () {
-          tries += 1;
-
-          try {
-            frame.contentWindow.postMessage(payload, "https://ordinals.com");
-          } catch (error) {
-            console.error(error);
-          }
-
-          if (tries >= 20) {
-            clearInterval(timer);
-          }
-        }, 250);
       }
 
-      async function loadBuild() {
-        try {
-          setStatus("Opening Ordinals receiver...");
-
-          frame.src = RECEIVER_URL;
-
-          var html = await fetchBuildHtml();
-
-          setStatus("Posting GitHub build HTML into Ordinals receiver...");
-
-          postHtmlToReceiver(html);
-
-          setStatus("Loaded. Replace /build/index.html, then click Reload build.");
-        } catch (error) {
-          console.error(error);
-          setStatus(error.message || String(error));
-        }
+      function makePayload(html, meta) {
+        return {
+          type: "ordinal-window-name-render",
+          version: "1.0.0",
+          html: html,
+          source: window.location.href,
+          buildUrl: meta && meta.buildUrl ? meta.buildUrl : "manual-paste",
+          receiver: RECEIVER_URL,
+          createdAt: new Date().toISOString()
+        };
       }
 
-      function getFullscreenElement() {
-        return (
-          document.fullscreenElement ||
-          document.webkitFullscreenElement ||
-          document.mozFullScreenElement ||
-          document.msFullscreenElement
+      function redirectWithPayload(payload) {
+        var encoded = JSON.stringify(payload);
+        var size = bytes(encoded);
+
+        window.name = encoded;
+
+        setStatus(
+          "Payload ready: " +
+          size.toLocaleString() +
+          " bytes. Redirecting to ordinals.com..."
         );
+
+        window.location.href = RECEIVER_URL + "#ordinal-window-loader";
       }
 
-      function requestFullscreen(el) {
-        if (el.requestFullscreen) return el.requestFullscreen();
-        if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-        if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
-        if (el.msRequestFullscreen) return el.msRequestFullscreen();
-      }
-
-      function exitFullscreen() {
-        if (document.exitFullscreen) return document.exitFullscreen();
-        if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-        if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
-        if (document.msExitFullscreen) return document.msExitFullscreen();
-      }
-
-      async function toggleFullscreen() {
+      async function checkBuild() {
         try {
-          if (getFullscreenElement()) {
-            await exitFullscreen();
-            fullscreenBtn.textContent = "Full screen";
-          } else {
-            await requestFullscreen(frame);
-            fullscreenBtn.textContent = "Exit full screen";
-          }
+          setBusy(true);
+
+          var build = await fetchBuildHtml();
+
+          setStatus(
+            "Build found: " +
+            bytes(build.html).toLocaleString() +
+            " bytes at " +
+            build.buildUrl
+          );
         } catch (error) {
           console.error(error);
-          setStatus("Fullscreen blocked by browser.");
+          setStatus(error.message || String(error), true);
+        } finally {
+          setBusy(false);
         }
       }
 
-      reloadBtn.addEventListener("click", loadBuild);
-      fullscreenBtn.addEventListener("click", toggleFullscreen);
+      async function launchBuild() {
+        try {
+          setBusy(true);
 
-      loadBuild();
+          var build = await fetchBuildHtml();
+
+          redirectWithPayload(
+            makePayload(build.html, {
+              buildUrl: build.buildUrl
+            })
+          );
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || String(error), true);
+          setBusy(false);
+        }
+      }
+
+      function launchPastedHtml() {
+        try {
+          var html = manualHtml.value.trim();
+
+          if (!html) {
+            throw new Error("Paste some HTML first.");
+          }
+
+          redirectWithPayload(
+            makePayload(html, {
+              buildUrl: "manual-paste"
+            })
+          );
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || String(error), true);
+        }
+      }
+
+      async function autoLaunchIfBuildExists() {
+        if (!AUTO_LAUNCH_IF_BUILD_EXISTS) {
+          setStatus("Ready. Auto-launch is disabled.");
+          return;
+        }
+
+        try {
+          setBusy(true);
+
+          var build = await fetchBuildHtml({
+            silent: true
+          });
+
+          setStatus(
+            "Build found. Auto-launching " +
+            bytes(build.html).toLocaleString() +
+            " bytes..."
+          );
+
+          redirectWithPayload(
+            makePayload(build.html, {
+              buildUrl: build.buildUrl
+            })
+          );
+        } catch (error) {
+          console.warn(error);
+          setStatus(
+            "No /build/index.html found yet. Add one, then reload this page or click Launch build now."
+          );
+          setBusy(false);
+        }
+      }
+
+      launchBtn.addEventListener("click", launchBuild);
+      checkBtn.addEventListener("click", checkBuild);
+      launchManualBtn.addEventListener("click", launchPastedHtml);
+
+      clearNameBtn.addEventListener("click", function () {
+        window.name = "";
+        setStatus("window.name cleared.");
+      });
+
+      autoLaunchIfBuildExists();
     })();
   </script>
 </body>
