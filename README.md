@@ -1,58 +1,207 @@
 # Inscription Tester
 
-A small demo repo for testing a **single reusable Ordinals HTML receiver**.
+A simple demo repo for testing a **single reusable Ordinals HTML receiver**.
 
-The idea:
+The important part is this:
 
 ```text
-GitHub Pages repo
-  └─ ordinal-launcher.html
-        ↓ fetches this repo's index.html
-        ↓ opens your inscribed receiver on ordinals.com
-        ↓ sends the HTML with postMessage
-
-Universal Ordinal Receiver inscription
-  └─ receives HTML
-  └─ injects/uses baseUrl
-  └─ document.write(html)
-  └─ app displays inside ordinals.com/content/...
+/index.html          = GitHub Pages loader. Keep this file as the loader.
+/build/index.html    = Your actual app/demo/build. Replace this file with your own app.
 ```
 
-## Files
+So users do **not** need to reinscribe a new receiver every time they change their app. They only replace the app inside the `build` folder.
 
-- `index.html` — demo app that will be loaded into the Ordinals receiver.
-- `ordinal-launcher.html` — GitHub Pages launcher. Open this in the browser, paste your receiver inscription URL, then launch.
-- `receiver-to-inscribe.html` — the reusable receiver code to inscribe once.
-- `.nojekyll` — keeps GitHub Pages from altering static paths.
+---
 
-## How to use
+## How it works
 
-1. Inscribe `receiver-to-inscribe.html` once.
-2. Copy the resulting URL, for example:
+```text
+1. User opens GitHub Pages:
+   https://switch-900.github.io/Inscription-tester/
+
+2. /index.html loads the inscribed Ordinals receiver in an iframe.
+
+3. /index.html fetches:
+   /build/index.html
+
+4. The loader sends that HTML to the receiver using postMessage.
+
+5. The receiver renders the app inside the ordinals.com content environment.
+```
+
+---
+
+## Repo layout
+
+```text
+Inscription-tester/
+├─ index.html                  ← GitHub Pages loader. Do not replace with your app.
+├─ receiver-to-inscribe.html   ← Receiver HTML to inscribe once.
+├─ metadata.json               ← Optional inscription metadata.
+├─ .nojekyll                   ← Keeps GitHub Pages static paths clean.
+└─ build/
+   ├─ index.html               ← Replace this with your own app/build.
+   └─ assets/                  ← Optional app assets, JS, CSS, images, etc.
+```
+
+---
+
+## Quick use
+
+### 1. Inscribe the receiver once
+
+Inscribe:
+
+```text
+receiver-to-inscribe.html
+```
+
+After inscription, you will get a URL like:
 
 ```text
 https://ordinals.com/content/YOUR_RECEIVER_INSCRIPTION_ID
 ```
 
-3. Enable GitHub Pages for this repo from `main` branch/root.
-4. Open:
+### 2. Add the receiver URL to the loader
+
+Open the root loader:
 
 ```text
-https://switch-900.github.io/Inscription-tester/ordinal-launcher.html
+/index.html
 ```
 
-5. Paste your receiver URL and click **Open in Ordinals Receiver**.
-
-The final app should open and run from the `ordinals.com/content/...` receiver window, while the editable code comes from GitHub Pages.
-
-## Vite/React note
-
-For a Vite build, use relative assets:
+Find:
 
 ```js
+var RECEIVER_URL = "https://ordinals.com/content/YOUR_RECEIVER_INSCRIPTION_ID";
+```
+
+Replace it with your real receiver inscription URL.
+
+### 3. Replace the app build
+
+To change what appears inside the receiver, replace this file:
+
+```text
+/build/index.html
+```
+
+That is the only file a simple HTML demo needs to replace.
+
+For bigger apps, replace the whole `build` folder:
+
+```text
+/build/index.html
+/build/assets/...
+```
+
+### 4. Open the GitHub Pages site
+
+```text
+https://switch-900.github.io/Inscription-tester/
+```
+
+The loader will fetch `/build/index.html` and display it inside the inscribed Ordinals receiver.
+
+---
+
+## Simple HTML app
+
+Put your app here:
+
+```text
+/build/index.html
+```
+
+Example:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>My Test App</title>
+</head>
+<body>
+  <h1>Hello from the build folder</h1>
+</body>
+</html>
+```
+
+---
+
+## Vite / React app
+
+For Vite, use relative asset paths so the receiver can resolve your JS and CSS correctly.
+
+```js
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
 export default defineConfig({
-  base: "./"
+  plugins: [react()],
+  base: "./",
+  build: {
+    outDir: "build"
+  }
 });
 ```
 
-Then add `ordinal-launcher.html` beside the built `index.html` in `dist`.
+Then your build output should be committed like this:
+
+```text
+/build/index.html
+/build/assets/index-xxxxx.js
+/build/assets/index-xxxxx.css
+```
+
+---
+
+## Common mistakes
+
+### The loader opens but the app does not show
+
+Check that this file exists:
+
+```text
+/build/index.html
+```
+
+If it is missing, the loader will fail with a 404.
+
+### The wrong file was replaced
+
+Do not replace the root `/index.html` with your app.
+
+The root `/index.html` is the loader.
+
+Replace this instead:
+
+```text
+/build/index.html
+```
+
+### Assets do not load
+
+Use relative paths where possible:
+
+```html
+<script src="./assets/app.js"></script>
+<link rel="stylesheet" href="./assets/app.css" />
+```
+
+For Vite, use:
+
+```js
+base: "./"
+```
+
+---
+
+## Security note
+
+This receiver is designed to accept HTML from HTTPS web apps and render it inside the receiver.
+
+Do not pass seed phrases, private keys, wallet passwords, or sensitive wallet data through this system.
+
+For final immutable releases, inscribe the completed app directly.
