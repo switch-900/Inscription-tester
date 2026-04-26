@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Ordinal GitHub Build Loader</title>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #050505;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    #topbar {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      box-sizing: border-box;
+      background: #0b0b0b;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #ffffff;
+      color: #111111;
+    }
+
+    #status {
+      font-size: 13px;
+      opacity: 0.75;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    iframe {
+      width: 100%;
+      height: calc(100% - 54px);
+      border: 0;
+      display: block;
+      background: #000000;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="topbar">
+    <button id="reload">Reload build</button>
+    <div id="status">Starting loader...</div>
+  </div>
+
+  <iframe
+    id="ordinal-viewer"
+    title="Ordinal Receiver"
+    allow="fullscreen; autoplay; clipboard-read; clipboard-write; encrypted-media; camera; microphone; geolocation; accelerometer; gyroscope"
+  ></iframe>
+
+  <script>
+    (function () {
+      /*
+        This is your inscribed receiver.
+      */
+      var RECEIVER_URL =
+        "https://ordinals.com/content/cfd4c6f93e596e58004aaae0fdda8931fa4c7c6f30c4501d202cb97f2a8c8beci0";
+
+      /*
+        Your actual app/build goes here:
+
+        /build/index.html
+
+        So on GitHub Pages this becomes:
+
+        https://switch-900.github.io/Inscription-tester/build/index.html
+      */
+      var BUILD_ENTRY = "./build/index.html";
+
+      var iframe = document.getElementById("ordinal-viewer");
+      var statusEl = document.getElementById("status");
+      var reloadBtn = document.getElementById("reload");
+
+      function setStatus(message) {
+        statusEl.textContent = message;
+      }
+
+      function getEntryUrl() {
+        return new URL(BUILD_ENTRY, window.location.href).href;
+      }
+
+      function getReceiverUrl() {
+        return new URL(RECEIVER_URL, window.location.href).href;
+      }
+
+      async function fetchBuildHtml() {
+        var entryUrl = getEntryUrl();
+
+        setStatus("Fetching build: " + entryUrl);
+
+        var res = await fetch(entryUrl + "?t=" + Date.now(), {
+          cache: "no-store"
+        });
+
+        if (!res.ok) {
+          throw new Error("Could not fetch build HTML. HTTP " + res.status);
+        }
+
+        var html = await res.text();
+
+        return {
+          html: html,
+          entryUrl: entryUrl
+        };
+      }
+
+      function waitForReceiverReady(timeoutMs) {
+        return new Promise(function (resolve) {
+          var finished = false;
+
+          function finish() {
+            if (finished) return;
+
+            finished = true;
+            window.removeEventListener("message", onMessage);
+            resolve();
+          }
+
+          function onMessage(event) {
+            if (event.origin !== "https://ordinals.com") return;
+
+            if (!event.data || event.data.type !== "ordinal-loader:ready") {
+              return;
+            }
+
+            finish();
+          }
+
+          window.addEventListener("message", onMessage);
+
+          /*
+            Even if the ready message is missed, continue after timeout.
+            The post function sends the payload several times anyway.
+          */
+          setTimeout(finish, timeoutMs || 3000);
+        });
+      }
+
+      function postBuildToReceiver(build) {
+        var payload = {
+          type: "ordinal-loader:render",
+          html: build.html,
+          baseUrl: build.entryUrl,
+          source: window.location.href
+        };
+
+        var attempts = 0;
+
+        var timer = setInterval(function () {
+          attempts += 1;
+
+          iframe.contentWindow.postMessage(payload, "https://ordinals.com");
+
+          if (attempts >= 12) {
+            clearInterval(timer);
+          }
+        }, 250);
+      }
+
+      async function loadIntoOrdinalReceiver() {
+        try {
+          var receiverUrl = getReceiverUrl();
+
+          setStatus("Loading Ordinals receiver...");
+
+          iframe.src = receiverUrl;
+
+          var buildPromise = fetchBuildHtml();
+
+          await waitForReceiverReady(3000);
+
+          var build = await buildPromise;
+
+          setStatus("Sending build into Ordinals receiver...");
+
+          postBuildToReceiver(build);
+
+          setStatus("Build sent to Ordinals receiver.");
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || String(error));
+        }
+      }
+
+      reloadBtn.addEventListener("click", loadIntoOrdinalReceiver);
+
+      loadIntoOrdinalReceiver();
+    })();
+  </script>
+</body>
+</html>
