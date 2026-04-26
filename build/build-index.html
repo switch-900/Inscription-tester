@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Inscription Tester Build</title>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(255, 138, 0, 0.25), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.12), transparent 28rem),
+        #050505;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    main {
+      width: min(960px, 100%);
+      padding: 28px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.45);
+      box-sizing: border-box;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 138, 0, 0.16);
+      color: #ffd6a8;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(34px, 8vw, 72px);
+      line-height: 0.96;
+      letter-spacing: -0.06em;
+    }
+
+    p {
+      max-width: 760px;
+      color: rgba(255, 255, 255, 0.74);
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .card {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 20px;
+      padding: 18px;
+      background: rgba(0, 0, 0, 0.24);
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+
+    .card span {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    code {
+      display: inline-block;
+      padding: 3px 6px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.35);
+      color: #ffd6a8;
+    }
+
+    button {
+      margin-top: 22px;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #ffffff;
+      color: #111111;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.16);
+      color: rgba(255, 255, 255, 0.56);
+      font-size: 13px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="badge">🟧 Inscription Tester Demo</div>
+
+    <h1>GitHub Build Loaded Into Ordinals</h1>
+
+    <p>
+      This file lives at <code>/build/index.html</code> in the GitHub repo.
+      The GitHub loader fetches it, sends it into the inscribed receiver using
+      <code>postMessage</code>, and the receiver renders it inside the Ordinals viewer.
+    </p>
+
+    <div class="grid">
+      <div class="card">
+        <strong>One receiver inscription</strong>
+        <span>Inscribe the receiver once and reuse it for unlimited projects.</span>
+      </div>
+
+      <div class="card">
+        <strong>Dynamic builds</strong>
+        <span>Update the GitHub build and reload without reinscribing the receiver.</span>
+      </div>
+
+      <div class="card">
+        <strong>Open HTTPS support</strong>
+        <span>GitHub Pages, Vercel, Netlify, Cloudflare Pages, and HTTPS domains can use it.</span>
+      </div>
+    </div>
+
+    <button onclick="testApp()">Test JavaScript</button>
+
+    <div class="footer" id="where"></div>
+  </main>
+
+  <script>
+    function testApp() {
+      alert("JavaScript is running from the loaded build.");
+    }
+
+    document.getElementById("where").textContent =
+      "Current document location: " + window.location.href;
+  </script>
+</body>
+</html>
