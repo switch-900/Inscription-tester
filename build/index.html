@@ -4,22 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Inscription Tester Build</title>
+  <title>Ordinal Quick Test Tool</title>
 
   <style>
-    :root {
-      --bg: #050505;
-      --panel: rgba(255, 255, 255, 0.08);
-      --panel2: rgba(0, 0, 0, 0.32);
-      --line: rgba(255, 255, 255, 0.16);
-      --text: #ffffff;
-      --muted: rgba(255, 255, 255, 0.72);
-      --soft: rgba(255, 255, 255, 0.48);
-      --orange: #ff8a00;
-      --orangeSoft: rgba(255, 138, 0, 0.18);
-      --orangeLine: rgba(255, 138, 0, 0.45);
-    }
-
     * {
       box-sizing: border-box;
     }
@@ -29,262 +16,263 @@
       margin: 0;
       width: 100%;
       min-height: 100%;
-      background:
-        radial-gradient(circle at 10% 10%, rgba(255, 138, 0, 0.34), transparent 32rem),
-        radial-gradient(circle at 90% 80%, rgba(90, 120, 255, 0.18), transparent 30rem),
-        linear-gradient(135deg, #050505 0%, #111111 50%, #050505 100%);
-      color: var(--text);
+      background: #050505;
+      color: #ffffff;
       font-family: Arial, Helvetica, sans-serif;
     }
 
     body {
-      padding: 22px;
+      padding: 16px;
+      background:
+        radial-gradient(circle at top left, rgba(255, 138, 0, 0.28), transparent 420px),
+        radial-gradient(circle at bottom right, rgba(80, 120, 255, 0.18), transparent 420px),
+        #050505;
     }
 
     main {
-      width: min(1180px, 100%);
+      width: min(1280px, 100%);
       margin: 0 auto;
-      min-height: calc(100vh - 44px);
       display: grid;
-      align-content: center;
-      gap: 16px;
+      gap: 14px;
     }
 
     .hero,
-    .card,
-    .banner {
-      border: 1px solid var(--line);
-      background: var(--panel);
-      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(12px);
+    .panel,
+    .note {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
     }
 
     .hero {
-      position: relative;
-      overflow: hidden;
-      border-radius: 34px;
-      padding: clamp(24px, 5vw, 56px);
-    }
-
-    .hero::before {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      background:
-        repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 72px),
-        repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 72px),
-        linear-gradient(115deg, transparent 0%, rgba(255, 138, 0, 0.13) 36%, transparent 62%);
-      transform: rotate(-7deg);
-      pointer-events: none;
-    }
-
-    .hero-inner {
-      position: relative;
-      z-index: 1;
+      padding: clamp(22px, 4vw, 42px);
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
-      gap: clamp(24px, 5vw, 52px);
+      gap: 18px;
       align-items: center;
     }
 
     .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 13px;
-      border-radius: 999px;
-      background: var(--orangeSoft);
-      color: #ffd8a8;
-      border: 1px solid var(--orangeLine);
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      max-width: 780px;
-      margin: 22px 0 14px;
-      font-size: clamp(42px, 8vw, 86px);
-      line-height: 0.92;
-      letter-spacing: -0.07em;
-    }
-
-    .lead {
-      max-width: 760px;
-      margin: 0;
-      color: var(--muted);
-      font-size: clamp(17px, 2.4vw, 22px);
-      line-height: 1.48;
-    }
-
-    code {
       display: inline-block;
-      padding: 3px 7px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.42);
-      color: #ffd8a8;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-family: Consolas, Monaco, monospace;
-      font-size: 0.9em;
-    }
-
-    .bitmap {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 8px;
-      padding: 18px;
-      border-radius: 26px;
-      background: rgba(0, 0, 0, 0.42);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-    }
-
-    .pixel {
-      aspect-ratio: 1 / 1;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .pixel.hot {
-      background: rgba(255, 138, 0, 0.78);
-      box-shadow: 0 0 24px rgba(255, 138, 0, 0.38);
-    }
-
-    .pixel.mid {
-      background: rgba(255, 138, 0, 0.26);
-    }
-
-    .caption {
-      margin-top: 14px;
-      color: var(--soft);
-      font-size: 13px;
-      line-height: 1.45;
-      text-align: center;
-    }
-
-    .flow {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-    }
-
-    .card {
-      border-radius: 24px;
-      padding: 22px;
-    }
-
-    .num {
-      width: 36px;
-      height: 36px;
+      padding: 8px 12px;
       border-radius: 999px;
-      display: grid;
-      place-items: center;
-      margin-bottom: 14px;
       color: #ffd8a8;
-      background: var(--orangeSoft);
-      border: 1px solid var(--orangeLine);
+      background: rgba(255, 138, 0, 0.18);
+      border: 1px solid rgba(255, 138, 0, 0.45);
+      font-size: 13px;
       font-weight: 900;
     }
 
-    .card strong {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 18px;
+    h1 {
+      margin: 16px 0 10px;
+      font-size: clamp(38px, 7vw, 76px);
+      line-height: 0.92;
+      letter-spacing: -0.06em;
     }
 
-    .card span {
-      display: block;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.48;
-    }
-
-    .benefits {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-    }
-
-    .benefit {
-      min-height: 130px;
-      border-radius: 22px;
-      padding: 18px;
-      background: var(--panel2);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    .benefit b {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 16px;
-    }
-
-    .benefit span {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.42;
-    }
-
-    .banner {
-      border-radius: 24px;
-      padding: 20px 22px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 16px;
-      align-items: center;
-    }
-
-    .banner p {
+    p {
       margin: 0;
-      color: var(--muted);
-      font-size: 15px;
+      color: rgba(255, 255, 255, 0.72);
       line-height: 1.5;
     }
 
-    button {
+    code {
+      padding: 3px 7px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.45);
+      color: #ffd8a8;
+      font-family: Consolas, Monaco, monospace;
+    }
+
+    .steps {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 10px;
+    }
+
+    .num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 138, 0, 0.18);
+      border: 1px solid rgba(255, 138, 0, 0.45);
+      color: #ffd8a8;
+      font-weight: 900;
+    }
+
+    .step b {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .step span {
+      color: rgba(255, 255, 255, 0.68);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .tool {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .panel {
+      overflow: hidden;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .head {
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.32);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .head small {
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .file {
       border: 0;
       border-radius: 999px;
-      padding: 12px 18px;
+      padding: 10px 14px;
       background: #ffffff;
       color: #111111;
       font-weight: 900;
       cursor: pointer;
-      white-space: nowrap;
+      font-size: 13px;
     }
 
-    .footer {
-      text-align: center;
-      color: var(--soft);
+    .ghost,
+    .file {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .danger {
+      background: #ff6868;
+      color: #190000;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    textarea {
+      width: 100%;
+      flex: 1;
+      min-height: 430px;
+      resize: vertical;
+      border: 0;
+      outline: none;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.58);
+      color: #f6f6f6;
+      font: 13px/1.5 Consolas, Monaco, monospace;
+    }
+
+    .base {
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 12px 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .base label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.42);
+      color: #ffffff;
+      outline: none;
+    }
+
+    iframe {
+      width: 100%;
+      flex: 1;
+      min-height: 520px;
+      border: 0;
+      background: #ffffff;
+    }
+
+    .note {
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    #status {
+      color: #ffd8a8;
       font-size: 13px;
       word-break: break-word;
-      padding-bottom: 6px;
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 900px) {
       body {
-        padding: 14px;
+        padding: 10px;
       }
 
-      main {
-        min-height: calc(100vh - 28px);
-      }
-
-      .hero-inner,
-      .flow,
-      .benefits,
-      .banner {
+      .hero,
+      .tool,
+      .note {
         grid-template-columns: 1fr;
       }
 
-      h1 {
-        letter-spacing: -0.055em;
+      .panel {
+        min-height: 420px;
       }
 
-      .bitmap {
-        grid-template-columns: repeat(8, 1fr);
-        gap: 6px;
-        padding: 14px;
+      iframe,
+      textarea {
+        min-height: 360px;
+      }
+
+      .head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .base {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -293,119 +281,263 @@
 <body>
   <main>
     <section class="hero">
-      <div class="hero-inner">
-        <div>
-          <div class="badge">🟧 Inscription Tester</div>
+      <div>
+        <div class="badge">🟧 Ordinals Quick Test Tool</div>
 
-          <h1>Test your Ordinals build before spending sats.</h1>
+        <h1>Paste HTML. Test before spending sats.</h1>
 
-          <p class="lead">
-            This demo is loaded from <code>/build/index.html</code>.
-            Replace this file with your own HTML app or build output, then open the
-            GitHub Pages link to see how it renders inside the inscribed
-            <code>ordinals.com</code> receiver.
-          </p>
-        </div>
+        <p>
+          This file lives at <code>/build/index.html</code>.
+          Paste HTML below to test quickly, or replace this file with your real build
+          when you want to test a full repo build through the Ordinals receiver.
+        </p>
+      </div>
 
-        <div>
-          <div class="bitmap" aria-label="bitmap style visual">
-            <div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel hot"></div>
-            <div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div>
-            <div class="pixel mid"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div>
-            <div class="pixel"></div><div class="pixel"></div><div class="pixel mid"></div><div class="pixel hot"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div>
-            <div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div>
-            <div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel mid"></div><div class="pixel hot"></div><div class="pixel"></div>
-            <div class="pixel mid"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel mid"></div><div class="pixel hot"></div>
-            <div class="pixel hot"></div><div class="pixel"></div><div class="pixel"></div><div class="pixel hot"></div><div class="pixel mid"></div><div class="pixel hot"></div><div class="pixel"></div><div class="pixel mid"></div>
-          </div>
-
-          <div class="caption">
-            GitHub Pages build → postMessage → Ordinals receiver
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <div>
+            <b>Keep root index.html</b>
+            <span>The root page loads the inscribed ordinals.com receiver.</span>
           </div>
         </div>
+
+        <div class="step">
+          <div class="num">2</div>
+          <div>
+            <b>Paste or upload HTML</b>
+            <span>Use this page for quick tests without reinscribing.</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">3</div>
+          <div>
+            <b>Test devices</b>
+            <span>Open the GitHub Pages link on phone, tablet, laptop, and desktop.</span>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="flow">
-      <div class="card">
-        <div class="num">1</div>
-        <strong>Keep the root loader</strong>
-        <span>
-          Do not replace the root <code>/index.html</code>.
-          That file loads the receiver and sends your build into it.
-        </span>
+    <section class="tool">
+      <div class="panel">
+        <div class="head">
+          <div>
+            <b>HTML input</b><br />
+            <small>Full HTML document or simple fragment</small>
+          </div>
+
+          <div class="buttons">
+            <button id="previewBtn">Preview</button>
+            <button class="ghost" id="sampleBtn">Sample</button>
+
+            <label class="file" for="fileInput">Upload</label>
+            <input id="fileInput" type="file" accept=".html,.htm,text/html,text/plain" />
+          </div>
+        </div>
+
+        <textarea id="htmlInput" spellcheck="false"></textarea>
+
+        <div class="base">
+          <label for="baseUrl">Base URL</label>
+          <input
+            id="baseUrl"
+            type="text"
+            placeholder="Optional. Used for relative assets like ./assets/app.js"
+          />
+        </div>
       </div>
 
-      <div class="card">
-        <div class="num">2</div>
-        <strong>Replace the build file</strong>
-        <span>
-          Put your project here: <code>/build/index.html</code>.
-          For larger projects, also include <code>/build/assets/</code>.
-        </span>
-      </div>
+      <div class="panel">
+        <div class="head">
+          <div>
+            <b>Preview</b><br />
+            <small>Iframe preview before loading into the receiver</small>
+          </div>
 
-      <div class="card">
-        <div class="num">3</div>
-        <strong>Open and test</strong>
-        <span>
-          Open the GitHub Pages URL and check the build inside the
-          real Ordinals receiver environment.
-        </span>
-      </div>
-    </section>
+          <div class="buttons">
+            <button class="ghost" id="renderBtn">Render in viewer</button>
+            <button class="ghost" id="copyBtn">Copy</button>
+            <button class="danger" id="clearBtn">Clear</button>
+          </div>
+        </div>
 
-    <section class="benefits">
-      <div class="benefit">
-        <b>No wasted sats</b>
-        <span>
-          Check layout, JavaScript, assets, and basic behaviour before paying to inscribe.
-        </span>
-      </div>
-
-      <div class="benefit">
-        <b>Device testing</b>
-        <span>
-          Open the same URL on phone, tablet, laptop, or desktop to catch responsive issues.
-        </span>
-      </div>
-
-      <div class="benefit">
-        <b>Fast iteration</b>
-        <span>
-          Update <code>/build/index.html</code>, refresh the page, and keep improving.
-        </span>
-      </div>
-
-      <div class="benefit">
-        <b>Vite / React friendly</b>
-        <span>
-          Use normal builds. For Vite, set <code>base: "./"</code> so assets resolve.
-        </span>
+        <iframe id="preview" title="HTML preview"></iframe>
       </div>
     </section>
 
-    <section class="banner">
+    <section class="note">
       <p>
-        For this demo, load your own build here:
-        <code>/build/index.html</code>.
-        The root loader fetches it, sends it with <code>postMessage</code>,
-        and the receiver renders it on <code>ordinals.com</code>.
+        For a real project build, put your app at <code>/build/index.html</code>
+        and assets at <code>/build/assets/</code>.
+        For Vite/React, set <code>base: "./"</code> so relative assets work.
       </p>
 
-      <button onclick="testBuild()">Test JavaScript</button>
+      <div id="status">Ready.</div>
     </section>
-
-    <div class="footer" id="where"></div>
   </main>
 
   <script>
-    function testBuild() {
-      alert("JavaScript is running from /build/index.html inside the receiver.");
-    }
+    (function () {
+      var htmlInput = document.getElementById("htmlInput");
+      var baseUrlInput = document.getElementById("baseUrl");
+      var preview = document.getElementById("preview");
+      var statusEl = document.getElementById("status");
+      var fileInput = document.getElementById("fileInput");
 
-    document.getElementById("where").textContent =
-      "Loaded build document: " + window.location.href;
+      var sampleHtml =
+        '<!DOCTYPE html>\n' +
+        '<html lang="en">\n' +
+        '<head>\n' +
+        '  <meta charset="UTF-8" />\n' +
+        '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
+        '  <title>My Ordinals Test</title>\n' +
+        '  <style>\n' +
+        '    html, body { margin: 0; min-height: 100%; background: #050505; color: white; font-family: Arial; }\n' +
+        '    body { display: grid; place-items: center; padding: 24px; box-sizing: border-box; }\n' +
+        '    main { max-width: 760px; padding: 32px; border-radius: 28px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); text-align: center; }\n' +
+        '    h1 { font-size: clamp(42px,8vw,78px); line-height: .92; letter-spacing: -.06em; margin: 0 0 14px; }\n' +
+        '    p { color: rgba(255,255,255,.72); line-height: 1.5; }\n' +
+        '    button { border: 0; border-radius: 999px; padding: 12px 18px; font-weight: 900; cursor: pointer; }\n' +
+        '  </style>\n' +
+        '</head>\n' +
+        '<body>\n' +
+        '  <main>\n' +
+        '    <h1>It works 🟧</h1>\n' +
+        '    <p>This HTML was pasted into the quick test tool and rendered inside the Ordinals receiver.</p>\n' +
+        '    <button onclick="alert(\'JavaScript works inside the test build\')">Test JS</button>\n' +
+        '  </main>\n' +
+        '</body>\n' +
+        '</html>';
+
+      function setStatus(message) {
+        statusEl.textContent = message;
+      }
+
+      function escapeAttr(value) {
+        return String(value || "").replace(/"/g, "&quot;");
+      }
+
+      function getBaseUrl() {
+        return baseUrlInput.value.trim() || new URL("./", window.location.href).href;
+      }
+
+      function wrapHtml(html, baseUrl) {
+        var out = String(html || "").trim();
+
+        if (!out) {
+          throw new Error("Paste some HTML first.");
+        }
+
+        var baseTag = "";
+
+        if (baseUrl) {
+          baseTag = '<base href="' + escapeAttr(new URL("./", baseUrl).href) + '">';
+        }
+
+        if (/<!doctype|<html[\s>]/i.test(out)) {
+          if (baseTag) {
+            if (/<base\s/i.test(out)) {
+              out = out.replace(/<base[^>]*>/i, baseTag);
+            } else if (/<head[\s>]/i.test(out)) {
+              out = out.replace(/<head([^>]*)>/i, "<head$1>" + baseTag);
+            } else {
+              out = out.replace(/<html([^>]*)>/i, "<html$1><head>" + baseTag + "</head>");
+            }
+          }
+
+          return out;
+        }
+
+        return [
+          '<!DOCTYPE html>',
+          '<html lang="en">',
+          '<head>',
+          '<meta charset="UTF-8" />',
+          '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
+          baseTag,
+          '</head>',
+          '<body>',
+          out,
+          '</body>',
+          '</html>'
+        ].join("\n");
+      }
+
+      function renderPreview() {
+        try {
+          preview.srcdoc = wrapHtml(htmlInput.value, getBaseUrl());
+          setStatus("Preview rendered.");
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || String(error));
+        }
+      }
+
+      function renderInViewer() {
+        try {
+          var finalHtml = wrapHtml(htmlInput.value, getBaseUrl());
+
+          document.open();
+          document.write(finalHtml);
+          document.close();
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || String(error));
+        }
+      }
+
+      async function copyHtml() {
+        try {
+          await navigator.clipboard.writeText(htmlInput.value);
+          setStatus("HTML copied.");
+        } catch (error) {
+          setStatus("Copy failed. Select the text and copy manually.");
+        }
+      }
+
+      function clearAll() {
+        htmlInput.value = "";
+        preview.srcdoc = "";
+        setStatus("Cleared.");
+      }
+
+      fileInput.addEventListener("change", function () {
+        var file = fileInput.files && fileInput.files[0];
+
+        if (!file) {
+          return;
+        }
+
+        var reader = new FileReader();
+
+        reader.onload = function () {
+          htmlInput.value = String(reader.result || "");
+          setStatus("Loaded: " + file.name);
+          renderPreview();
+        };
+
+        reader.readAsText(file);
+      });
+
+      document.getElementById("previewBtn").addEventListener("click", renderPreview);
+
+      document.getElementById("sampleBtn").addEventListener("click", function () {
+        htmlInput.value = sampleHtml;
+        renderPreview();
+      });
+
+      document.getElementById("renderBtn").addEventListener("click", renderInViewer);
+
+      document.getElementById("copyBtn").addEventListener("click", copyHtml);
+
+      document.getElementById("clearBtn").addEventListener("click", clearAll);
+
+      htmlInput.value = sampleHtml;
+      baseUrlInput.value = new URL("./", window.location.href).href;
+      renderPreview();
+    })();
   </script>
 </body>
 </html>
