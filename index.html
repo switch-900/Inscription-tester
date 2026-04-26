@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Ordinal Build Loader</title>
+  <title>Ordinal GitHub Build Loader</title>
 
   <style>
     html,
@@ -24,41 +24,15 @@
     }
 
     #topbar {
-      min-height: 64px;
+      min-height: 58px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 8px 12px;
+      gap: 10px;
+      padding: 10px 12px;
       box-sizing: border-box;
       background: #0b0b0b;
       border-bottom: 1px solid rgba(255, 255, 255, 0.12);
       flex: 0 0 auto;
-    }
-
-    #buttons {
-      display: flex;
-      gap: 8px;
-      flex: 0 0 auto;
-      flex-wrap: wrap;
-    }
-
-    #info {
-      min-width: 0;
-      flex: 1;
-    }
-
-    #title {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 3px;
-    }
-
-    #status {
-      font-size: 12px;
-      opacity: 0.75;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     button {
@@ -69,7 +43,6 @@
       cursor: pointer;
       background: #ffffff;
       color: #111111;
-      flex: 0 0 auto;
     }
 
     button.secondary {
@@ -78,31 +51,36 @@
       border: 1px solid rgba(255, 255, 255, 0.18);
     }
 
+    #status {
+      min-width: 0;
+      flex: 1;
+      font-size: 13px;
+      opacity: 0.78;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     iframe {
       width: 100%;
       flex: 1;
       min-height: 0;
       border: 0;
-      display: block;
       background: #000000;
     }
 
-    @media (max-width: 720px) {
+    @media (max-width: 700px) {
       #topbar {
-        flex-direction: column;
-        align-items: stretch;
+        flex-wrap: wrap;
       }
 
-      #buttons {
-        width: 100%;
+      #status {
+        flex-basis: 100%;
+        white-space: normal;
       }
 
       button {
         flex: 1;
-      }
-
-      #status {
-        white-space: normal;
       }
     }
   </style>
@@ -110,43 +88,35 @@
 
 <body>
   <div id="topbar">
-    <div id="buttons">
-      <button id="reload">Reload build</button>
-      <button id="fullscreen" class="secondary">View full screen</button>
-    </div>
-
-    <div id="info">
-      <div id="title">Ordinal Build Loader</div>
-      <div id="status">
-        Keep this root index.html as the loader. Replace /build/index.html with your app.
-      </div>
-    </div>
+    <button id="reload">Reload build</button>
+    <button id="fullscreen" class="secondary">Full screen</button>
+    <div id="status">Loading Ordinals HTML receiver...</div>
   </div>
 
   <iframe
-    id="ordinal-viewer"
-    title="Ordinal Receiver"
+    id="ordinal-frame"
+    title="Ordinals HTML Receiver"
     allow="fullscreen; autoplay; clipboard-read; clipboard-write; encrypted-media; camera; microphone; geolocation; accelerometer; gyroscope"
     allowfullscreen
-    webkitallowfullscreen
-    mozallowfullscreen
   ></iframe>
 
   <script>
     (function () {
       /*
-        Existing inscribed receiver.
-        No need to reinscribe a new receiver for this version.
+        This is the EXISTING Ordinals HTML viewer.
+        It already works when you paste HTML into it.
       */
       var RECEIVER_URL =
-        "https://ordinals.com/content/cfd4c6f93e596e58004aaae0fdda8931fa4c7c6f30c4501d202cb97f2a8c8beci0";
+        "https://ordinals.com/content/33064f05445f5c4d97d6a70585e70cdabb0b52690e61d611afb2b4091aca614bi0";
 
       /*
-        This is the app file you replace.
+        This is the file you replace in your repo.
+        Put your test app here:
+          /build/index.html
       */
       var BUILD_ENTRY = "./build/index.html";
 
-      var iframe = document.getElementById("ordinal-viewer");
+      var frame = document.getElementById("ordinal-frame");
       var statusEl = document.getElementById("status");
       var reloadBtn = document.getElementById("reload");
       var fullscreenBtn = document.getElementById("fullscreen");
@@ -155,536 +125,82 @@
         statusEl.textContent = message;
       }
 
+      function buildEntryUrl() {
+        return new URL(BUILD_ENTRY, window.location.href).href;
+      }
+
       function cacheBust(url) {
         var u = new URL(url, window.location.href);
         u.searchParams.set("t", Date.now());
         return u.href;
       }
 
-      function getEntryUrl() {
-        return new URL(BUILD_ENTRY, window.location.href).href;
-      }
+      async function fetchBuildHtml() {
+        var url = buildEntryUrl();
 
-      function getReceiverUrl() {
-        return new URL(RECEIVER_URL, window.location.href).href;
-      }
+        setStatus("Fetching " + url);
 
-      function isHttpUrl(value) {
-        return /^https?:\/\//i.test(String(value || ""));
-      }
-
-      function isIgnoredUrl(value) {
-        return /^(data:|blob:|javascript:|mailto:|tel:|#)/i.test(String(value || ""));
-      }
-
-      function isOrdinalRoute(value) {
-        var v = String(value || "").trim();
-
-        return (
-          /^\/content\//i.test(v) ||
-          /^\/r\//i.test(v) ||
-          /^\/blockheight(?:[/?#]|$)/i.test(v) ||
-          /^\/blockhash(?:[/?#]|$)/i.test(v) ||
-          /^\/blocktime(?:[/?#]|$)/i.test(v) ||
-          /^https:\/\/ordinals\.com\/content\//i.test(v) ||
-          /^https:\/\/ordinals\.com\/r\//i.test(v) ||
-          /^https:\/\/ordinals\.com\/blockheight(?:[/?#]|$)/i.test(v) ||
-          /^https:\/\/ordinals\.com\/blockhash(?:[/?#]|$)/i.test(v) ||
-          /^https:\/\/ordinals\.com\/blocktime(?:[/?#]|$)/i.test(v)
-        );
-      }
-
-      function resolveBuildUrl(value, baseUrl) {
-        if (!value) return value;
-
-        var clean = String(value).trim();
-
-        if (isIgnoredUrl(clean)) return clean;
-
-        /*
-          Important:
-          Ordinals recursive paths must NOT be resolved against GitHub Pages.
-
-          Leave these alone:
-            /r/...
-            /content/...
-            /blockheight
-            /blockhash
-            /blocktime
-
-          Once the HTML is written inside the ordinals.com iframe,
-          those paths naturally resolve against ordinals.com.
-        */
-        if (isOrdinalRoute(clean)) return clean;
-
-        return new URL(clean, baseUrl).href;
-      }
-
-      function isLocalBuildAsset(url) {
-        if (!url) return false;
-
-        if (isOrdinalRoute(url)) return false;
-
-        try {
-          var u = new URL(url, window.location.href);
-          return u.origin === window.location.origin;
-        } catch (error) {
-          return false;
-        }
-      }
-
-      async function fetchText(url) {
-        var res = await fetch(cacheBust(url), {
+        var response = await fetch(cacheBust(url), {
           cache: "no-store"
         });
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch " + url + " HTTP " + res.status);
+        if (!response.ok) {
+          throw new Error("Could not fetch /build/index.html. HTTP " + response.status);
         }
 
-        return await res.text();
-      }
+        var html = await response.text();
 
-      async function fetchAsDataUrl(url) {
-        var res = await fetch(cacheBust(url), {
-          cache: "no-store"
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch asset " + url + " HTTP " + res.status);
+        if (!html.trim()) {
+          throw new Error("/build/index.html is empty.");
         }
 
-        var blob = await res.blob();
-
-        return await new Promise(function (resolve, reject) {
-          var reader = new FileReader();
-
-          reader.onload = function () {
-            resolve(reader.result);
-          };
-
-          reader.onerror = function () {
-            reject(reader.error || new Error("FileReader failed."));
-          };
-
-          reader.readAsDataURL(blob);
-        });
+        return html;
       }
 
-      function toBase64Unicode(text) {
-        var bytes = new TextEncoder().encode(String(text || ""));
-        var binary = "";
-        var chunkSize = 0x8000;
-
-        for (var i = 0; i < bytes.length; i += chunkSize) {
-          var chunk = bytes.subarray(i, i + chunkSize);
-          binary += String.fromCharCode.apply(null, chunk);
-        }
-
-        return btoa(binary);
-      }
-
-      function escapeScriptEnd(code) {
-        return String(code || "").replace(/<\/script/gi, "<\\/script");
-      }
-
-      async function inlineCssUrls(css, cssUrl) {
-        var output = String(css || "");
-        var tasks = [];
-
-        output.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi, function (full, quote, rawUrl) {
-          var clean = String(rawUrl || "").trim();
-
-          if (
-            !clean ||
-            isIgnoredUrl(clean) ||
-            isOrdinalRoute(clean) ||
-            isHttpUrl(clean)
-          ) {
-            return full;
-          }
-
-          var absolute = new URL(clean, cssUrl).href;
-
-          if (!isLocalBuildAsset(absolute)) {
-            return full;
-          }
-
-          tasks.push({
-            full: full,
-            absolute: absolute
-          });
-
-          return full;
-        });
-
-        for (var i = 0; i < tasks.length; i++) {
-          try {
-            var dataUrl = await fetchAsDataUrl(tasks[i].absolute);
-            output = output.split(tasks[i].full).join("url(" + dataUrl + ")");
-          } catch (error) {
-            console.warn("CSS asset inline failed:", tasks[i].absolute, error);
-          }
-        }
-
-        return output;
-      }
-
-      async function replaceAsync(input, regex, replacer) {
-        var parts = [];
-        var lastIndex = 0;
-        var match;
-
-        while ((match = regex.exec(input)) !== null) {
-          parts.push(input.slice(lastIndex, match.index));
-          parts.push(await replacer(match));
-          lastIndex = regex.lastIndex;
-        }
-
-        parts.push(input.slice(lastIndex));
-        return parts.join("");
-      }
-
-      async function createModuleDataUrl(jsUrl, seen) {
-        seen = seen || {};
-
-        var absoluteUrl = new URL(jsUrl, window.location.href).href;
-
-        if (seen[absoluteUrl]) {
-          return seen[absoluteUrl];
-        }
-
-        setStatus("Inlining module: " + absoluteUrl);
-
-        var code = await fetchText(absoluteUrl);
-
-        /*
-          Static imports:
-            import "./chunk.js";
-            import x from "./chunk.js";
-            import { x } from "./chunk.js";
-
-          Local GitHub build chunks become data URLs.
-          Ordinals routes are left alone.
-        */
-        code = await replaceAsync(
-          code,
-          /(\bimport\s+(?:[^"'()]*?\s+from\s+)?)(["'])([^"']+)(\2)/g,
-          async function (m) {
-            var prefix = m[1];
-            var quote = m[2];
-            var specifier = m[3];
-
-            if (
-              isIgnoredUrl(specifier) ||
-              isOrdinalRoute(specifier) ||
-              isHttpUrl(specifier) ||
-              !specifier.startsWith(".")
-            ) {
-              return m[0];
-            }
-
-            var childUrl = new URL(specifier, absoluteUrl).href;
-            var childDataUrl = await createModuleDataUrl(childUrl, seen);
-
-            return prefix + quote + childDataUrl + quote;
-          }
-        );
-
-        /*
-          Export-from statements:
-            export * from "./chunk.js";
-            export { x } from "./chunk.js";
-        */
-        code = await replaceAsync(
-          code,
-          /(\bexport\s+(?:\*|\{[^}]*\})\s+from\s+)(["'])([^"']+)(\2)/g,
-          async function (m) {
-            var prefix = m[1];
-            var quote = m[2];
-            var specifier = m[3];
-
-            if (
-              isIgnoredUrl(specifier) ||
-              isOrdinalRoute(specifier) ||
-              isHttpUrl(specifier) ||
-              !specifier.startsWith(".")
-            ) {
-              return m[0];
-            }
-
-            var childUrl = new URL(specifier, absoluteUrl).href;
-            var childDataUrl = await createModuleDataUrl(childUrl, seen);
-
-            return prefix + quote + childDataUrl + quote;
-          }
-        );
-
-        /*
-          Dynamic imports:
-            import("./chunk.js")
-
-          Local GitHub chunks become data URLs.
-          Ordinals routes are left alone.
-        */
-        code = await replaceAsync(
-          code,
-          /\bimport\(\s*(["'])([^"']+)(\1)\s*\)/g,
-          async function (m) {
-            var quote = m[1];
-            var specifier = m[2];
-
-            if (
-              isIgnoredUrl(specifier) ||
-              isOrdinalRoute(specifier) ||
-              isHttpUrl(specifier) ||
-              !specifier.startsWith(".")
-            ) {
-              return m[0];
-            }
-
-            var childUrl = new URL(specifier, absoluteUrl).href;
-            var childDataUrl = await createModuleDataUrl(childUrl, seen);
-
-            return "import(" + quote + childDataUrl + quote + ")";
-          }
-        );
-
-        var dataUrl =
-          "data:text/javascript;charset=utf-8;base64," +
-          toBase64Unicode(code);
-
-        seen[absoluteUrl] = dataUrl;
-
-        return dataUrl;
-      }
-
-      async function inlineBuildHtml(html, entryUrl) {
-        var parser = new DOMParser();
-        var doc = parser.parseFromString(html, "text/html");
-
-        /*
-          Remove <base>. This is the critical fix.
-
-          We do NOT want GitHub as the base inside the ordinals.com iframe.
-          Without a base tag, recursive routes resolve correctly:
-            /r/...        -> https://ordinals.com/r/...
-            /content/...  -> https://ordinals.com/content/...
-        */
-        Array.prototype.slice.call(doc.querySelectorAll("base")).forEach(function (el) {
-          el.remove();
-        });
-
-        /*
-          Remove modulepreload links because those would try to load
-          GitHub-hosted JS from inside ordinals.com.
-        */
-        Array.prototype.slice.call(doc.querySelectorAll('link[rel="modulepreload"]')).forEach(function (el) {
-          el.remove();
-        });
-
-        /*
-          Inline stylesheet links.
-        */
-        var links = Array.prototype.slice.call(
-          doc.querySelectorAll('link[rel="stylesheet"][href]')
-        );
-
-        for (var i = 0; i < links.length; i++) {
-          var link = links[i];
-          var href = link.getAttribute("href");
-          var cssUrl = resolveBuildUrl(href, entryUrl);
-
-          if (!isLocalBuildAsset(cssUrl)) {
-            continue;
-          }
-
-          setStatus("Inlining CSS: " + cssUrl);
-
-          var css = await fetchText(cssUrl);
-          css = await inlineCssUrls(css, cssUrl);
-
-          var style = doc.createElement("style");
-          style.textContent = css;
-
-          link.parentNode.replaceChild(style, link);
-        }
-
-        /*
-          Inline JS files.
-        */
-        var scripts = Array.prototype.slice.call(doc.querySelectorAll("script[src]"));
-
-        for (var j = 0; j < scripts.length; j++) {
-          var script = scripts[j];
-          var src = script.getAttribute("src");
-          var scriptUrl = resolveBuildUrl(src, entryUrl);
-
-          if (!isLocalBuildAsset(scriptUrl)) {
-            continue;
-          }
-
-          var type = (script.getAttribute("type") || "").toLowerCase();
-
-          setStatus("Inlining JS: " + scriptUrl);
-
-          var newScript = doc.createElement("script");
-
-          Array.prototype.slice.call(script.attributes).forEach(function (attr) {
-            if (attr.name.toLowerCase() !== "src") {
-              newScript.setAttribute(attr.name, attr.value);
-            }
-          });
-
-          if (type === "module") {
-            newScript.setAttribute("type", "module");
-
-            var moduleDataUrl = await createModuleDataUrl(scriptUrl, {});
-
-            newScript.textContent =
-              "import " + JSON.stringify(moduleDataUrl) + ";";
-          } else {
-            var js = await fetchText(scriptUrl);
-            newScript.textContent = escapeScriptEnd(js);
-          }
-
-          script.parentNode.replaceChild(newScript, script);
-        }
-
-        /*
-          Inline basic media assets from the GitHub build.
-          Ordinals routes are left untouched.
-        */
-        var assetAttrs = [
-          ["img", "src"],
-          ["source", "src"],
-          ["video", "poster"],
-          ["audio", "src"],
-          ["iframe", "src"]
-        ];
-
-        for (var a = 0; a < assetAttrs.length; a++) {
-          var selector = assetAttrs[a][0] + "[" + assetAttrs[a][1] + "]";
-          var attr = assetAttrs[a][1];
-
-          var nodes = Array.prototype.slice.call(doc.querySelectorAll(selector));
-
-          for (var n = 0; n < nodes.length; n++) {
-            var node = nodes[n];
-            var value = node.getAttribute(attr);
-
-            if (
-              !value ||
-              isIgnoredUrl(value) ||
-              isOrdinalRoute(value) ||
-              isHttpUrl(value)
-            ) {
-              continue;
-            }
-
-            try {
-              var assetUrl = new URL(value, entryUrl).href;
-
-              if (!isLocalBuildAsset(assetUrl)) {
-                continue;
-              }
-
-              setStatus("Inlining asset: " + assetUrl);
-
-              var dataUrl = await fetchAsDataUrl(assetUrl);
-              node.setAttribute(attr, dataUrl);
-            } catch (error) {
-              console.warn("Asset inline failed:", value, error);
-            }
-          }
-        }
-
-        /*
-          Marker so you can inspect the final document.
-        */
-        var marker = doc.createElement("meta");
-        marker.setAttribute("name", "ordinal-build-loader");
-        marker.setAttribute("content", "github-pages-inline-no-base");
-        doc.head.appendChild(marker);
-
-        return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-      }
-
-      async function fetchAndPackageBuild() {
-        var entryUrl = getEntryUrl();
-
-        setStatus("Fetching /build/index.html...");
-
-        var html = await fetchText(entryUrl);
-
-        setStatus("Packaging build into one HTML payload...");
-
-        var packagedHtml = await inlineBuildHtml(html, entryUrl);
-
-        return {
-          html: packagedHtml,
-          entryUrl: entryUrl
-        };
-      }
-
-      function waitForReceiverReady(timeoutMs) {
-        return new Promise(function (resolve) {
-          var finished = false;
-
-          function finish() {
-            if (finished) return;
-
-            finished = true;
-            window.removeEventListener("message", onMessage);
-            resolve();
-          }
-
-          function onMessage(event) {
-            if (event.origin !== "https://ordinals.com") return;
-
-            if (!event.data || event.data.type !== "ordinal-loader:ready") {
-              return;
-            }
-
-            finish();
-          }
-
-          window.addEventListener("message", onMessage);
-
-          /*
-            Continue even if the ready message is missed.
-            The payload is posted repeatedly anyway.
-          */
-          setTimeout(finish, timeoutMs || 3000);
-        });
-      }
-
-      function postBuildToReceiver(build) {
-        /*
-          Important:
-          Do NOT send baseUrl.
-
-          The existing receiver only injects the GitHub <base> when baseUrl is sent.
-          Removing baseUrl keeps /r/... and /content/... resolving from ordinals.com.
-        */
+      function postHtmlToReceiver(html) {
         var payload = {
-          type: "ordinal-loader:render",
-          html: build.html,
-          source: window.location.href,
-          entryUrl: build.entryUrl
+          type: "html-view:render",
+          html: html
         };
 
-        var attempts = 0;
+        /*
+          Send a few times because the iframe may still be booting.
+          The receiver ignores duplicates after it document.writes anyway.
+        */
+        var tries = 0;
 
         var timer = setInterval(function () {
-          attempts += 1;
+          tries += 1;
 
-          iframe.contentWindow.postMessage(payload, "https://ordinals.com");
+          try {
+            frame.contentWindow.postMessage(payload, "https://ordinals.com");
+          } catch (error) {
+            console.error(error);
+          }
 
-          if (attempts >= 16) {
+          if (tries >= 20) {
             clearInterval(timer);
           }
         }, 250);
+      }
+
+      async function loadBuild() {
+        try {
+          setStatus("Opening Ordinals receiver...");
+
+          frame.src = RECEIVER_URL;
+
+          var html = await fetchBuildHtml();
+
+          setStatus("Posting GitHub build HTML into Ordinals receiver...");
+
+          postHtmlToReceiver(html);
+
+          setStatus("Loaded. Replace /build/index.html, then click Reload build.");
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || String(error));
+        }
       }
 
       function getFullscreenElement() {
@@ -696,11 +212,11 @@
         );
       }
 
-      function requestFullscreen(element) {
-        if (element.requestFullscreen) return element.requestFullscreen();
-        if (element.webkitRequestFullscreen) return element.webkitRequestFullscreen();
-        if (element.mozRequestFullScreen) return element.mozRequestFullScreen();
-        if (element.msRequestFullscreen) return element.msRequestFullscreen();
+      function requestFullscreen(el) {
+        if (el.requestFullscreen) return el.requestFullscreen();
+        if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+        if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
+        if (el.msRequestFullscreen) return el.msRequestFullscreen();
       }
 
       function exitFullscreen() {
@@ -710,64 +226,25 @@
         if (document.msExitFullscreen) return document.msExitFullscreen();
       }
 
-      function updateFullscreenButton() {
-        fullscreenBtn.textContent = getFullscreenElement()
-          ? "Exit full screen"
-          : "View full screen";
-      }
-
       async function toggleFullscreen() {
         try {
           if (getFullscreenElement()) {
             await exitFullscreen();
-            updateFullscreenButton();
-            return;
+            fullscreenBtn.textContent = "Full screen";
+          } else {
+            await requestFullscreen(frame);
+            fullscreenBtn.textContent = "Exit full screen";
           }
-
-          await requestFullscreen(iframe);
-          updateFullscreenButton();
         } catch (error) {
           console.error(error);
-          setStatus("Full screen failed. Browser may have blocked it.");
+          setStatus("Fullscreen blocked by browser.");
         }
       }
 
-      async function loadIntoOrdinalReceiver() {
-        try {
-          var receiverUrl = getReceiverUrl();
-
-          setStatus("Loading existing ordinals.com receiver...");
-
-          iframe.src = receiverUrl;
-
-          var buildPromise = fetchAndPackageBuild();
-
-          await waitForReceiverReady(3000);
-
-          var build = await buildPromise;
-
-          setStatus("Sending packaged build into ordinals.com receiver...");
-
-          postBuildToReceiver(build);
-
-          setStatus(
-            "Loaded from GitHub Pages. Replace /build/index.html and click Reload build."
-          );
-        } catch (error) {
-          console.error(error);
-          setStatus(error.message || String(error));
-        }
-      }
-
-      reloadBtn.addEventListener("click", loadIntoOrdinalReceiver);
+      reloadBtn.addEventListener("click", loadBuild);
       fullscreenBtn.addEventListener("click", toggleFullscreen);
 
-      document.addEventListener("fullscreenchange", updateFullscreenButton);
-      document.addEventListener("webkitfullscreenchange", updateFullscreenButton);
-      document.addEventListener("mozfullscreenchange", updateFullscreenButton);
-      document.addEventListener("MSFullscreenChange", updateFullscreenButton);
-
-      loadIntoOrdinalReceiver();
+      loadBuild();
     })();
   </script>
 </body>
