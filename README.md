@@ -1,33 +1,31 @@
-# Inscription Tester
+# Inscription Tester 
 
-A simple demo repo for testing a **single reusable Ordinals HTML receiver**.
+Test your Ordinals HTML builds before spending sats. The biggest diffrence with this and other tester is that you can share your build and test with others, great for multiplayer. note: that some wallets like Xverse won't connect via iframe. This does not mean that it cannont work just thhat it wont connect via Iframe. 
 
-The important part is this:
+This repo lets you load a build from GitHub Pages into an existing Ordinals HTML receiver, so you can quickly test your app in the `ordinals.com` content environment.
+
+Receiver used:
 
 ```text
-/index.html          = GitHub Pages loader. Keep this file as the loader.
-/build/index.html    = Your actual app/demo/build. Replace this file with your own app.
+https://ordinals.com/content/33064f05445f5c4d97d6a70585e70cdabb0b52690e61d611afb2b4091aca614bi0
 ```
-
-So users do **not** need to reinscribe a new receiver every time they change their app. They only replace the app inside the `build` folder.
 
 ---
 
-## How it works
+## Quick start
+
+1. Fork this repo.
+2. Add your app to the `build` folder.
+3. Make sure your main file is:
 
 ```text
-1. User opens GitHub Pages:
-   https://switch-900.github.io/Inscription-tester/
-
-2. /index.html loads the inscribed Ordinals receiver in an iframe.
-
-3. /index.html fetches:
-   /build/index.html
-
-4. The loader sends that HTML to the receiver using postMessage.
-
-5. The receiver renders the app inside the ordinals.com content environment.
+/build/index.html
 ```
+
+4. Turn on GitHub Pages for your fork.
+5. Open your GitHub Pages link.
+
+The loader will automatically fetch your build and send it into the Ordinals receiver.
 
 ---
 
@@ -35,79 +33,52 @@ So users do **not** need to reinscribe a new receiver every time they change the
 
 ```text
 Inscription-tester/
-├─ index.html                  ← GitHub Pages loader. Do not replace with your app.
-├─ receiver-to-inscribe.html   ← Receiver HTML to inscribe once.
-├─ metadata.json               ← Optional inscription metadata.
-├─ .nojekyll                   ← Keeps GitHub Pages static paths clean.
+├─ index.html          ← GitHub Pages loader. Do not replace this.
+├─ .nojekyll           ← Keeps GitHub Pages paths clean.
 └─ build/
-   ├─ index.html               ← Replace this with your own app/build.
-   └─ assets/                  ← Optional app assets, JS, CSS, images, etc.
+   ├─ index.html       ← Replace this with your app/build.
+   └─ assets/          ← Optional JS, CSS, images, etc.
 ```
 
----
-
-## Quick use
-
-### 1. Inscribe the receiver once
-
-Inscribe:
+The important part:
 
 ```text
-receiver-to-inscribe.html
+/index.html        = the loader
+/build/index.html  = your app
 ```
 
-After inscription, you will get a URL like:
+Do **not** replace the root `index.html`.
 
-```text
-https://ordinals.com/content/YOUR_RECEIVER_INSCRIPTION_ID
-```
-
-### 2. Add the receiver URL to the loader
-
-Open the root loader:
-
-```text
-/index.html
-```
-
-Find:
-
-```js
-var RECEIVER_URL = "https://ordinals.com/content/YOUR_RECEIVER_INSCRIPTION_ID";
-```
-
-Replace it with your real receiver inscription URL.
-
-### 3. Replace the app build
-
-To change what appears inside the receiver, replace this file:
+Replace this file instead:
 
 ```text
 /build/index.html
 ```
 
-That is the only file a simple HTML demo needs to replace.
+---
 
-For bigger apps, replace the whole `build` folder:
-
-```text
-/build/index.html
-/build/assets/...
-```
-
-### 4. Open the GitHub Pages site
+## How it works
 
 ```text
-https://switch-900.github.io/Inscription-tester/
+1. You open the GitHub Pages site.
+
+2. The root index.html checks for:
+   /build/index.html
+
+3. If a build exists, it loads the Ordinals receiver.
+
+4. The loader sends your build HTML to the receiver using postMessage.
+
+5. The receiver renders your app inside the ordinals.com environment.
 ```
 
-The loader will fetch `/build/index.html` and display it inside the inscribed Ordinals receiver.
+This means you can update your build in GitHub without reinscribing a new test file every time.
 
 ---
 
-## Simple HTML app
+## Simple HTML build
 
-Put your app here:
+Put this in:
 
 ```text
 /build/index.html
@@ -120,19 +91,20 @@ Example:
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>My Test App</title>
+  <title>My Ordinals Test</title>
 </head>
 <body>
-  <h1>Hello from the build folder</h1>
+  <h1>Hello from GitHub Pages</h1>
+  <p>This is being loaded into the Ordinals receiver.</p>
 </body>
 </html>
 ```
 
 ---
 
-## Vite / React app
+## Vite / React builds
 
-For Vite, use relative asset paths so the receiver can resolve your JS and CSS correctly.
+For Vite, use relative paths:
 
 ```js
 import { defineConfig } from "vite";
@@ -147,50 +119,60 @@ export default defineConfig({
 });
 ```
 
-Then your build output should be committed like this:
+Then commit the output like this:
 
 ```text
 /build/index.html
-/build/assets/index-xxxxx.js
-/build/assets/index-xxxxx.css
+/build/assets/...
 ```
 
 ---
 
-## Common mistakes
+## Why use this?
 
-### The loader opens but the app does not show
+- Test before inscribing
+- Save sats
+- Share a GitHub Pages link
+- Check your build on different devices
+- Quickly update and retest builds
+- Test Ordinals paths like `/content/...` and `/r/...`
 
-Check that this file exists:
+---
 
-```text
-/build/index.html
-```
+## Common issues
 
-If it is missing, the loader will fail with a 404.
+### My app does not load
 
-### The wrong file was replaced
-
-Do not replace the root `/index.html` with your app.
-
-The root `/index.html` is the loader.
-
-Replace this instead:
+Check this file exists:
 
 ```text
 /build/index.html
 ```
 
-### Assets do not load
+### I replaced the wrong file
 
-Use relative paths where possible:
+Do not replace:
+
+```text
+/index.html
+```
+
+Replace:
+
+```text
+/build/index.html
+```
+
+### My assets do not load
+
+Use relative paths:
 
 ```html
 <script src="./assets/app.js"></script>
 <link rel="stylesheet" href="./assets/app.css" />
 ```
 
-For Vite, use:
+For Vite, make sure you use:
 
 ```js
 base: "./"
@@ -198,10 +180,10 @@ base: "./"
 
 ---
 
-## Security note
+## Notes
 
-This receiver is designed to accept HTML from HTTPS web apps and render it inside the receiver.
+This is a testing tool.
 
-Do not pass seed phrases, private keys, wallet passwords, or sensitive wallet data through this system.
+For final immutable releases, inscribe your finished app directly.
 
-For final immutable releases, inscribe the completed app directly.
+Do not use this with seed phrases, private keys, wallet passwords, or sensitive wallet data.
